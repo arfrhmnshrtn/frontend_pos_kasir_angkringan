@@ -1,0 +1,363 @@
+import React, { useState, useEffect } from 'react';
+import Sidebar from './components/Layout/Sidebar';
+import Header from './components/Layout/Header';
+import StatCard from './components/Dashboard/StatCard';
+import SalesChart from './components/Dashboard/SalesChart';
+import OrdersTable from './components/Orders/OrdersTable';
+import MenuKatalogView from './components/MenuKatalog/MenuKatalogView';
+import WasteManagementView from './components/Kebocoran/WasteManagementView';
+import IncomeExpenseView from './components/Transaksi/IncomeExpenseView';
+import DebtManagementView from './components/Hutang/DebtManagementView';
+import PosView from './components/Pos/PosView';
+import CashReportView from './components/Keuangan/CashReportView';
+import AddOrderModal from './components/Orders/AddOrderModal';
+import LoginView from './components/Auth/LoginView';
+import { 
+  DollarSign, 
+  ShoppingBag, 
+  Utensils, 
+  Users, 
+  RefreshCw, 
+  Download,
+  Calendar,
+  Layers,
+  Settings,
+  HelpCircle,
+  Trash2,
+  Receipt,
+  BookOpen,
+  Calculator
+} from 'lucide-react';
+import './index.css';
+
+export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [darkTheme, setDarkTheme] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Apply dark mode class to document body
+  useEffect(() => {
+    if (darkTheme) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkTheme]);
+
+  // Initial Sample Orders
+  const [orders, setOrders] = useState([
+    {
+      id: 'AK-1089',
+      customer: 'Rian Permana',
+      table: '03',
+      items: '2x Sate Kulit, 1x Nasi Kucing Teri, 1x Es Teh',
+      total: 'Rp 14.000',
+      payment: 'QRIS',
+      paymentStatus: 'Lunas',
+      time: '19:42'
+    },
+    {
+      id: 'AK-1088',
+      customer: 'Siti Rahma',
+      table: '01',
+      items: '3x Sate Puyuh, 2x Nasi Kucing Bandeng, 2x Wedang Jahe',
+      total: 'Rp 32.000',
+      payment: 'Tunai',
+      paymentStatus: 'Lunas',
+      time: '19:35'
+    },
+    {
+      id: 'AK-1087',
+      customer: 'Budi Santoso',
+      table: '05',
+      items: '5x Sate Usus, 2x Tempe Mendoan, 1x Kopi Joss',
+      total: 'Rp 25.000',
+      payment: 'Hutang / Kasbon',
+      paymentStatus: 'Utang',
+      time: '19:10'
+    },
+    {
+      id: 'AK-1086',
+      customer: 'Dewi Lestari',
+      table: 'Bungkus',
+      items: '4x Sate Kulit, 3x Nasi Kucing Teri',
+      total: 'Rp 24.000',
+      payment: 'Tunai',
+      paymentStatus: 'Lunas',
+      time: '18:50'
+    },
+    {
+      id: 'AK-1085',
+      customer: 'Andi Pratama',
+      table: '02',
+      items: '1x Es Jeruk, 2x Sate Usus',
+      total: 'Rp 10.000',
+      payment: 'Hutang / Kasbon',
+      paymentStatus: 'Utang',
+      time: '18:20'
+    }
+  ]);
+
+  const handleAddOrder = (newOrder) => {
+    setOrders([newOrder, ...orders]);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <LoginView 
+        onLoginSuccess={(role) => {
+          setUserRole(role);
+          setIsAuthenticated(true);
+        }} 
+      />
+    );
+  }
+
+  return (
+    <div className="flex w-full min-h-screen bg-main text-text">
+      {/* Left Sidebar */}
+      <Sidebar 
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+      />
+
+      {/* Main Content Outer Wrapper */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Header Bar */}
+        <Header 
+          darkTheme={darkTheme}
+          setDarkTheme={setDarkTheme}
+          setMobileOpen={setMobileOpen}
+          onOpenAddModal={() => setIsAddModalOpen(true)}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
+
+        {/* Dashboard Main Scrollable Area */}
+        <main className="p-7 flex-1 flex flex-col gap-6 max-w-[1600px] w-full mx-auto">
+          {/* Header Title Section */}
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="text-2xl font-extrabold text-text mb-1 tracking-tight">
+                {activeTab === 'dashboard' && 'Dashboard Utama'}
+                {activeTab === 'pos' && 'Kasir POS (Input Pembelian)'}
+                {activeTab === 'pesanan' && 'Kelola Pesanan'}
+                {activeTab === 'katalog' && 'Katalog & Stok Menu'}
+                {activeTab === 'pelanggan' && 'Data Pelanggan'}
+                {activeTab === 'transaksi' && 'Pemasukan & Pengeluaran'}
+                {activeTab === 'hutang' && 'Catatan Buku Hutang & Piutang'}
+                {activeTab === 'analitik' && 'Analisis Penjualan'}
+                {activeTab === 'keuangan' && 'Laporan Kas & Keuangan'}
+                {activeTab === 'kebocoran' && 'Barang Terbuang / Waste Log'}
+                {activeTab === 'pengaturan' && 'Pengaturan Toko'}
+              </h1>
+              <p className="text-sm text-text-secondary">
+                Selamat datang kembali, Mas Pak Admin! Berikut ringkasan operasional Angkringan hari ini.
+              </p>
+            </div>
+
+            <div className="flex gap-2.5 items-center">
+              <div className="bg-card border border-border px-3 py-1.5 rounded-lg text-xs font-semibold text-text-secondary flex items-center gap-1.5 shadow-sm">
+                <Calendar size={14} />
+                <span>Kamis, 6 Ags 2026</span>
+              </div>
+
+              <button className="bg-card hover:bg-main border border-border text-text px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm" onClick={() => window.location.reload()}>
+                <RefreshCw size={16} />
+                <span>Refresh</span>
+              </button>
+
+              <button className="bg-card hover:bg-main border border-border text-text px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm">
+                <Download size={16} />
+                <span>Export Data</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Conditional View Rendering based on active tab */}
+          {activeTab === 'dashboard' && (
+            <>
+              {/* Stat Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <StatCard 
+                  title="Total Omset Hari Ini"
+                  value="Rp 1.850.000"
+                  trend="+14.2%"
+                  isPositive={true}
+                  icon={DollarSign}
+                  colorClass="orange"
+                  subtitle="vs kemarin (Rp 1.620.000)"
+                />
+                <StatCard 
+                  title="Total Pesanan"
+                  value="48 Order"
+                  trend="+8.5%"
+                  isPositive={true}
+                  icon={ShoppingBag}
+                  colorClass="blue"
+                  subtitle="12 pesanan diproses"
+                />
+                <StatCard 
+                  title="Varian Menu Terjual"
+                  value="182 Porsi"
+                  trend="+18%"
+                  isPositive={true}
+                  icon={Utensils}
+                  colorClass="green"
+                  subtitle="Terbanyak: Sate Kulit"
+                />
+                <StatCard 
+                  title="Pelanggan Hari Ini"
+                  value="36 Orang"
+                  trend="-2.1%"
+                  isPositive={false}
+                  icon={Users}
+                  colorClass="purple"
+                  subtitle="Avg Spend: Rp 51.300"
+                />
+              </div>
+
+              {/* Sales Chart & Top Items */}
+              <SalesChart />
+
+              {/* Orders Data Table */}
+              <OrdersTable 
+                orders={orders}
+                setOrders={setOrders}
+                searchQuery={searchQuery}
+              />
+            </>
+          )}
+
+          {activeTab === 'pesanan' && (
+            <OrdersTable 
+              orders={orders}
+              setOrders={setOrders}
+              searchQuery={searchQuery}
+            />
+          )}
+
+          {activeTab === 'katalog' && (
+            <MenuKatalogView />
+          )}
+
+          {activeTab === 'pelanggan' && (
+            <div className="bg-card border border-border rounded-xl shadow-sm p-6 flex flex-col gap-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div className="flex items-center gap-2 font-bold text-text text-[1.05rem]">
+                  <Users size={20} className="text-primary" />
+                  <span>Daftar Pelanggan Setia Angkringan</span>
+                </div>
+              </div>
+              <div className="w-full overflow-x-auto">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr>
+                      <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Nama Pelanggan</th>
+                      <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Total Kunjungan</th>
+                      <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Total Transaksi</th>
+                      <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Favorit Menu</th>
+                      <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Status Membership</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="px-4 py-3.5 border-b border-border font-semibold text-text">Rian Permana</td>
+                      <td className="px-4 py-3.5 border-b border-border text-text">14 Kali</td>
+                      <td className="px-4 py-3.5 border-b border-border font-bold text-text">Rp 280.000</td>
+                      <td className="px-4 py-3.5 border-b border-border text-text">Sate Kulit Bakar</td>
+                      <td className="px-4 py-3.5 border-b border-border"><span className="bg-success-bg text-success px-2.5 py-1 rounded-full text-[0.7rem] font-bold">VIP Member</span></td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3.5 border-b border-border font-semibold text-text">Siti Rahma</td>
+                      <td className="px-4 py-3.5 border-b border-border text-text">9 Kali</td>
+                      <td className="px-4 py-3.5 border-b border-border font-bold text-text">Rp 195.000</td>
+                      <td className="px-4 py-3.5 border-b border-border text-text">Wedang Jahe</td>
+                      <td className="px-4 py-3.5 border-b border-border"><span className="bg-warning-bg text-amber-700 px-2.5 py-1 rounded-full text-[0.7rem] font-bold">Reguler</span></td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3.5 border-b border-border font-semibold text-text">Budi Santoso</td>
+                      <td className="px-4 py-3.5 border-b border-border text-text">22 Kali</td>
+                      <td className="px-4 py-3.5 border-b border-border font-bold text-text">Rp 450.000</td>
+                      <td className="px-4 py-3.5 border-b border-border text-text">Nasi Kucing Teri</td>
+                      <td className="px-4 py-3.5 border-b border-border"><span className="bg-success-bg text-success px-2.5 py-1 rounded-full text-[0.7rem] font-bold">VIP Member</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'pos' && (
+            <PosView onAddOrder={handleAddOrder} />
+          )}
+
+          {activeTab === 'transaksi' && (
+            <IncomeExpenseView />
+          )}
+
+          {activeTab === 'hutang' && (
+            <DebtManagementView />
+          )}
+
+          {activeTab === 'analitik' && (
+            <SalesChart />
+          )}
+
+          {activeTab === 'keuangan' && (
+            <CashReportView />
+          )}
+
+          {activeTab === 'kebocoran' && (
+            <WasteManagementView />
+          )}
+
+          {activeTab === 'pengaturan' && (
+            <div className="bg-card border border-border rounded-xl shadow-sm p-6 flex flex-col gap-4 max-w-[600px]">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div className="flex items-center gap-2 font-bold text-text text-[1.05rem]">
+                  <Settings size={20} className="text-primary" />
+                  <span>Pengaturan Angkringan</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-text-secondary mb-1">Nama Outlet / Angkringan</label>
+                  <input type="text" className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" defaultValue="Angkringan Mas Pak" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-text-secondary mb-1">Jam Operasional</label>
+                  <input type="text" className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" defaultValue="17.00 - 01.00 WIB" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-text-secondary mb-1">Alamat Toko</label>
+                  <input type="text" className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" defaultValue="Jl. Malioboro No. 42, Yogyakarta" />
+                </div>
+                <button className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-md mt-2 self-start">
+                  Simpan Perubahan
+                </button>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* Add New Order Modal */}
+      <AddOrderModal 
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAddOrder={handleAddOrder}
+      />
+    </div>
+  );
+}
