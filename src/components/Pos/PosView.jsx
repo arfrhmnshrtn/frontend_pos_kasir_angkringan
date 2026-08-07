@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../services/axios';
 import {
   Search,
   Plus,
@@ -35,9 +36,13 @@ export default function PosView({ onAddOrder }) {
   const [productList, setProductList] = useState([]);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/katalog`, { method: 'GET' })
-      .then(res => res.json())
-      .then(data => {
+    api.get('/katalog')
+      .then(res => {
+        let data = [];
+        if (res && Array.isArray(res.data)) data = res.data;
+        else if (res && res.data && Array.isArray(res.data.data)) data = res.data.data;
+        else if (Array.isArray(res)) data = res;
+        
         if (Array.isArray(data)) {
           const mapped = data.map(item => {
             const icons = { sate: '🍢', nasi: '🍙', minuman: '🍹', gorengan: '🥟' };
@@ -143,19 +148,7 @@ export default function PosView({ onAddOrder }) {
         }))
       };
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/pos-kasir`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.message || 'Gagal menyimpan pesanan');
-      }
+      const result = await api.post('/pos-kasir', payload);
 
       // Use order ID from API if available, else fallback
       const orderId = result.data?.nomor_pesanan || `AK-${Math.floor(1000 + Math.random() * 9000)}`;

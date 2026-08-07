@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import api from '../../services/axios';
 import { X, Trash2, AlertTriangle } from 'lucide-react';
 
 export default function DeleteOrderModal({ isOpen, onClose, order, onDeleteSuccess }) {
@@ -12,13 +13,7 @@ export default function DeleteOrderModal({ isOpen, onClose, order, onDeleteSucce
     setError(null);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/pos-kasir/${order.id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Gagal menghapus pesanan.');
-      }
+      await api.delete(`/pos-kasir/${order.id}`);
 
       onDeleteSuccess();
       onClose();

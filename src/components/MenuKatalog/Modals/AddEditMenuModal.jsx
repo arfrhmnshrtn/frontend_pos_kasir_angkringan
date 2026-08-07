@@ -1,4 +1,5 @@
 import React from 'react';
+import api from '../../../services/axios';
 import { UtensilsCrossed, X } from 'lucide-react';
 
 export default function AddEditMenuModal({
@@ -49,14 +50,8 @@ export default function AddEditMenuModal({
         url_gambar: formData.image || presetImages[0].url
       };
 
-      fetch(`${import.meta.env.VITE_API_BASE_URL}/katalog`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      })
-        .then(res => res.json())
+      api.post('/katalog', payload)
+        .then(res => res.data || res)
         .then(savedItem => {
           const mappedItem = {
             id: savedItem.id || Date.now(), // Fallback if backend doesn't return ID immediately

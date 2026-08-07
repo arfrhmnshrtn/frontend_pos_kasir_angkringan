@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -19,6 +21,10 @@ import {
 } from 'lucide-react';
 
 export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab, mobileOpen, setMobileOpen }) {
+  const { user, role, logout } = useAuth();
+  const userRoleStr = typeof role === 'string' ? role.toUpperCase() : role?.name?.toUpperCase() || 'KASIR';
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
   const menuItems = [
     {
       section: 'Utama',
@@ -42,13 +48,25 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
     {
       section: 'Sistem',
       items: [
+        { id: 'users', label: 'Pengguna & Kasir', icon: Users },
         { id: 'pengaturan', label: 'Pengaturan Toko', icon: Settings },
       ]
     }
   ];
 
+  const allowedKasirMenus = ['dashboard', 'pos', 'pesanan', 'katalog'];
+
+  const filteredMenuItems = menuItems.map(group => {
+    if (userRoleStr === 'OWNER') return group;
+    return {
+      ...group,
+      items: group.items.filter(item => allowedKasirMenus.includes(item.id))
+    };
+  }).filter(group => group.items.length > 0);
+
   return (
-    <aside className={`fixed lg:sticky top-0 h-screen bg-sidebar border-r border-border-sidebar flex flex-col transition-all duration-300 z-[100] ${collapsed ? 'w-20' : 'w-[260px]'
+    <>
+      <aside className={`fixed lg:sticky top-0 h-screen bg-sidebar border-r border-border-sidebar flex flex-col transition-all duration-300 z-[100] ${collapsed ? 'w-20' : 'w-[300px]'
       } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
       <div className="p-5 flex items-center justify-between border-b border-border-sidebar">
         <a href="#dashboard" className="flex items-center gap-3 no-underline overflow-hidden" onClick={() => setActiveTab('dashboard')}>
@@ -57,7 +75,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
           </div>
           {!collapsed && (
             <div className="flex flex-col whitespace-nowrap">
-              <span className="text-[1.1rem] font-bold text-white tracking-tight">Angkringan</span>
+              <span className="text-[1.1rem] font-bold text-white tracking-tight">Angkringan 88</span>
               <span className="text-xs text-blue-500 font-semibold uppercase tracking-wider">Admin Panel</span>
             </div>
           )}
@@ -79,7 +97,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-6 custom-scrollbar">
-        {menuItems.map((group, gIdx) => (
+        {filteredMenuItems.map((group, gIdx) => (
           <div className="flex flex-col gap-1" key={gIdx}>
             {!collapsed && <span className="text-[0.7rem] font-bold uppercase text-slate-500 tracking-wider px-3 pb-1.5 whitespace-nowrap">{group.section}</span>}
             {group.items.map((item) => {
@@ -114,24 +132,53 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
         ))}
       </nav>
 
-      <div className='group px-4 py-3 border-t border-border-sidebar hover:bg-red-50 flex items-center gap-3 cursor-pointer transition-colors duration-200'>
+      {/* <div className='group px-4 py-3 border-t border-border-sidebar hover:bg-red-50 flex items-center gap-3 cursor-pointer transition-colors duration-200' onClick={logout}>
         <LogOut className='w-5 h-5 shrink-0 text-red-500 transition-transform duration-200 group-hover:-translate-x-0.5' />
         <span className='text-red-500 font-medium text-sm'>Logout</span>
-      </div>
+      </div> */}
 
-      <div className="p-4 border-t border-border-sidebar bg-black/20">
-        <div className="flex items-center gap-3 overflow-hidden">
+      <div className="p-3 border-t border-border-sidebar bg-black/20">
+        <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
           <div className="w-[38px] h-[38px] rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
-            A
+            {user?.fullname?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || 'U'}
           </div>
+
           {!collapsed && (
-            <div className="flex flex-col whitespace-nowrap overflow-hidden">
-              <span className="text-slate-100 text-[0.85rem] font-semibold truncate">Mas Pak Admin</span>
-              <span className="text-slate-500 text-xs">Super Admin</span>
+            <div className="flex flex-1 flex-col min-w-0">
+              <span className="text-slate-100 text-[0.85rem] font-semibold truncate">
+                {user?.fullname || user?.name || 'User'}
+              </span>
+              <span className="text-slate-500 text-xs truncate">
+                {userRoleStr === 'OWNER' ? 'Owner / Admin' : 'Staff Kasir'}
+              </span>
             </div>
           )}
         </div>
+
+        <button
+          className={`mt-3 w-full px-3 py-2 bg-primary hover:bg-primary/80 text-white text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 ${collapsed ? 'px-0' : ''}`}
+          onClick={() => setIsLogoutModalOpen(true)}
+          title="Logout"
+        >
+          <LogOut size={14} />
+          {!collapsed && <span>Logout</span>}
+        </button>
       </div>
     </aside>
+
+    <ConfirmDialog
+      isOpen={isLogoutModalOpen}
+      onClose={() => setIsLogoutModalOpen(false)}
+      onConfirm={() => {
+        setIsLogoutModalOpen(false);
+        logout();
+      }}
+      title="Konfirmasi Logout"
+      message="Apakah Anda yakin ingin keluar dari sistem? Anda harus memasukkan PIN Anda kembali untuk masuk."
+      confirmText="Keluar"
+      cancelText="Batal"
+      variant="danger"
+    />
+  </>
   );
 }

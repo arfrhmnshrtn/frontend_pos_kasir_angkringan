@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../services/axios';
 import { X, Save, AlertCircle } from 'lucide-react';
 
 export default function EditOrderModal({ isOpen, onClose, order, onUpdateSuccess }) {
@@ -28,22 +29,8 @@ export default function EditOrderModal({ isOpen, onClose, order, onUpdateSuccess
         };
 
         try {
-            // Catatan: Menggunakan 'PATCH' karena Fetch API tidak mendukung request body untuk method 'GET'.
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/pos-kasir/${order.id}/pembayaran`, {
-                method: 'PATCH', // Menggunakan PATCH karena POST/PUT/PATCH mendukung request body
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            console.log(payload)
-
-            if (!response.ok) {
-                throw new Error('Gagal memperbarui data pembayaran pesanan.');
-            }
-
-            const result = await response.json();
+            const result = await api.patch(`/pos-kasir/${order.id}/pembayaran`, payload);
+            console.log(payload);
             console.log(result);
 
             onUpdateSuccess();

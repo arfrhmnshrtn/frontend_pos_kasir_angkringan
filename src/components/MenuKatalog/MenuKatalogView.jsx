@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../services/axios';
 import { UtensilsCrossed, Plus, Search, CheckCircle2, Eye, Edit3, Trash2, Box, AlertTriangle } from 'lucide-react';
 import AddEditMenuModal from './Modals/AddEditMenuModal';
 
@@ -21,9 +22,13 @@ export default function MenuKatalogView() {
   const [menuList, setMenuList] = useState([]);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/katalog`, { method: 'GET' })
-      .then(res => res.json())
-      .then(data => {
+    api.get('/katalog')
+      .then(res => {
+        let data = [];
+        if (res && Array.isArray(res.data)) data = res.data;
+        else if (res && res.data && Array.isArray(res.data.data)) data = res.data.data;
+        else if (Array.isArray(res)) data = res;
+        
         if (Array.isArray(data)) {
           const mapped = data.map(item => {
             const stockNum = item.stok || 0;

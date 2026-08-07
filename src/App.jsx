@@ -12,6 +12,8 @@ import PosView from './components/Pos/PosView';
 import CashReportView from './components/Keuangan/CashReportView';
 import AddOrderModal from './components/Orders/AddOrderModal';
 import LoginView from './components/Auth/LoginView';
+import { UsersPage } from './pages/users/UsersPage';
+import { useAuth } from './hooks/useAuth';
 import { 
   DollarSign, 
   ShoppingBag, 
@@ -31,9 +33,9 @@ import {
 import './index.css';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState(null);
-
+  const { isAuthenticated, user, role, loading } = useAuth();
+  
+  // Local state for sidebar/theme
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [darkTheme, setDarkTheme] = useState(false);
@@ -108,12 +110,16 @@ export default function App() {
     setOrders([newOrder, ...orders]);
   };
 
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-main text-text">Tunggu sebentar...</div>;
+  }
+
   if (!isAuthenticated) {
     return (
       <LoginView 
         onLoginSuccess={(role) => {
-          setUserRole(role);
-          setIsAuthenticated(true);
+          // Temporarily just reload page to sync context if LoginView manual fetches it
+          window.location.reload();
         }} 
       />
     );
@@ -159,6 +165,7 @@ export default function App() {
                 {activeTab === 'analitik' && 'Analisis Penjualan'}
                 {activeTab === 'keuangan' && 'Laporan Kas & Keuangan'}
                 {activeTab === 'kebocoran' && 'Barang Terbuang / Waste Log'}
+                {activeTab === 'users' && 'Kelola Pengguna & Kasir'}
                 {activeTab === 'pengaturan' && 'Pengaturan Toko'}
               </h1>
               <p className="text-sm text-text-secondary">
@@ -249,6 +256,10 @@ export default function App() {
 
           {activeTab === 'katalog' && (
             <MenuKatalogView />
+          )}
+
+          {activeTab === 'users' && (
+            <UsersPage />
           )}
 
           {activeTab === 'pelanggan' && (

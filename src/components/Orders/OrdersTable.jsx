@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../services/axios';
 import EditOrderModal from './EditOrderModal';
 import PrintReceiptModal from './PrintReceiptModal';
 import DeleteOrderModal from './DeleteOrderModal';
@@ -57,11 +58,16 @@ export default function OrdersTable({ searchQuery }) {
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/pos-kasir`);
-      const result = await response.json();
-      if (result && result.data) {
-        setOrders(result.data);
+      const result = await api.get('/pos-kasir');
+      let actualData = [];
+      if (result && Array.isArray(result.data)) {
+         actualData = result.data;
+      } else if (result && result.data && Array.isArray(result.data.data)) {
+         actualData = result.data.data;
+      } else if (Array.isArray(result)) {
+         actualData = result;
       }
+      setOrders(actualData);
     } catch (error) {
       console.error("Gagal mengambil data pesanan:", error);
     } finally {
