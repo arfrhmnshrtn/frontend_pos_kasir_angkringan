@@ -107,7 +107,7 @@ export default function LoginView({ onLoginSuccess }) {
       <div className="absolute top-[-15%] left-[-10%] w-96 h-96 bg-primary/20 rounded-full blur-[120px]"></div>
       <div className="absolute bottom-[-15%] right-[-10%] w-96 h-96 bg-primary/20 rounded-full blur-[120px]"></div>
 
-      <div className="bg-card w-full max-w-sm rounded-[2rem] shadow-sm border border-border p-8 relative z-10 animate-in fade-in duration-500 zoom-in-95">
+      <div className="bg-card w-full max-w-sm rounded-2xl shadow-sm border border-border p-8 relative z-10 animate-in fade-in duration-500 zoom-in-95">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
             <Store size={32} />

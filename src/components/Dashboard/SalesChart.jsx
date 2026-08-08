@@ -44,13 +44,13 @@ export default function SalesChart() {
           </div>
 
           <div className="flex gap-1.5 p-1 bg-main border border-border rounded-lg">
-            <button 
+            <button
               className={`px-4 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-colors ${timeRange === 'minggu' ? 'bg-card shadow-sm text-text' : 'text-text-secondary hover:text-text'}`}
               onClick={() => setTimeRange('minggu')}
             >
               Mingguan
             </button>
-            <button 
+            <button
               className={`px-4 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-colors ${timeRange === 'bulan' ? 'bg-card shadow-sm text-text' : 'text-text-secondary hover:text-text'}`}
               onClick={() => setTimeRange('bulan')}
             >
@@ -73,13 +73,13 @@ export default function SalesChart() {
             </div>
           </div>
 
-          <div className="flex items-end justify-between h-[200px] mt-auto">
+          <div className="flex items-end justify-between h-48 mt-auto">
             {activeData.map((item, idx) => (
               <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
                 <div className="text-[0.65rem] font-bold text-muted opacity-0 group-hover:opacity-100 transition-opacity -translate-y-2 group-hover:translate-y-0">{item.total}</div>
-                <div className="w-full max-w-[32px] bg-main rounded-md h-full flex items-end overflow-hidden">
-                  <div 
-                    className="w-full bg-gradient-to-t from-primary/80 to-primary rounded-md transition-all duration-500 ease-out group-hover:from-primary group-hover:to-primary-hover relative shadow-[0_0_10px_rgba(37,99,235,0.2)]" 
+                <div className="w-full max-w-8 bg-main rounded-md h-full flex items-end overflow-hidden">
+                  <div
+                    className="w-full bg-linear-to-t from-primary/80 to-primary rounded-md transition-all duration-500 ease-out group-hover:from-primary group-hover:to-primary-hover relative shadow-[0_0_10px_rgba(37,99,235,0.2)]"
                     style={{ height: `${(item.val / 120) * 100}%` }}
                     title={`${item.day}: ${item.total}`}
                   />

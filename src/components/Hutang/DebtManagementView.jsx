@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { 
-  BookOpen, 
-  Plus, 
-  Search, 
-  DollarSign, 
-  Clock, 
-  CheckCircle2, 
-  XCircle, 
-  UserCheck, 
-  Truck, 
-  X, 
+import {
+  BookOpen,
+  Plus,
+  Search,
+  DollarSign,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  UserCheck,
+  Truck,
+  X,
   Trash2,
   Phone,
   AlertCircle,
@@ -140,8 +140,8 @@ export default function DebtManagementView() {
   // Filter Records
   const filteredRecords = records.filter(rec => {
     const matchSearch = rec.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        rec.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        rec.phone.includes(searchQuery);
+      rec.notes.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      rec.phone.includes(searchQuery);
 
     let matchTab = true;
     if (filterTab === 'piutang') matchTab = rec.type === 'Piutang Pelanggan';
@@ -221,11 +221,11 @@ export default function DebtManagementView() {
           </div>
 
           <div className="flex gap-3 items-center w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-[220px]">
+            <div className="relative flex-1 sm:w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
-              <input 
-                type="text" 
-                className="w-full pl-9 pr-4 py-2 bg-main border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" 
+              <input
+                type="text"
+                className="w-full pl-9 pr-4 py-2 bg-main border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all"
                 placeholder="Cari nama, no HP, catatan..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -304,7 +304,7 @@ export default function DebtManagementView() {
                         {rec.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-xs text-text-secondary max-w-[220px]">
+                    <td className="px-4 py-3.5 text-xs text-text-secondary max-w-48">
                       {rec.notes}
                     </td>
                     <td className="px-4 py-3.5 text-right">
@@ -315,7 +315,7 @@ export default function DebtManagementView() {
                         >
                           {rec.status === 'Lunas' ? 'Batal Lunas' : 'Tandai Lunas'}
                         </button>
-                        <button 
+                        <button
                           className="w-8 h-8 rounded-lg flex items-center justify-center text-danger hover:text-white hover:bg-danger transition-colors cursor-pointer"
                           title="Hapus Catatan"
                           onClick={() => handleDeleteRecord(rec.id)}
@@ -341,7 +341,7 @@ export default function DebtManagementView() {
       {/* Modal Form */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}>
-          <div className="bg-card w-full max-w-[500px] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 border border-border flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 border border-border flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-main/50">
               <div className="flex items-center gap-2.5">
                 <BookOpen size={20} className="text-primary" />
@@ -356,9 +356,9 @@ export default function DebtManagementView() {
               <div className="p-6 flex flex-col gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Jenis Catatan</label>
-                  <select 
-                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all cursor-pointer" 
-                    value={type} 
+                  <select
+                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all cursor-pointer"
+                    value={type}
                     onChange={(e) => setType(e.target.value)}
                   >
                     <option value="Piutang Pelanggan">Piutang Pelanggan (Pelanggan Kasbon / Utang Makan)</option>
@@ -370,9 +370,9 @@ export default function DebtManagementView() {
                   <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">
                     {type === 'Piutang Pelanggan' ? 'Nama Pelanggan' : 'Nama Supplier / Pihak Vendor'}
                   </label>
-                  <input 
-                    type="text" 
-                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" 
+                  <input
+                    type="text"
+                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all"
                     placeholder={type === 'Piutang Pelanggan' ? "Contoh: Mas Budi Komunitas Motor" : "Contoh: Pak Kliwon Supplier Daging"}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -383,9 +383,9 @@ export default function DebtManagementView() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">No. Kontak / Whatsapp</label>
-                    <input 
-                      type="text" 
-                      className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" 
+                    <input
+                      type="text"
+                      className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all"
                       placeholder="Contoh: 081234567890"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -394,9 +394,9 @@ export default function DebtManagementView() {
 
                   <div>
                     <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Nominal (Rp)</label>
-                    <input 
-                      type="number" 
-                      className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" 
+                    <input
+                      type="number"
+                      className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all"
                       placeholder="Contoh: 50000"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
@@ -408,9 +408,9 @@ export default function DebtManagementView() {
 
                 <div>
                   <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Tanggal Jatuh Tempo (Due Date)</label>
-                  <input 
-                    type="date" 
-                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all text-text-secondary" 
+                  <input
+                    type="date"
+                    className="w-full bg-main border border-border rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all text-text-secondary"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
                   />
@@ -418,8 +418,8 @@ export default function DebtManagementView() {
 
                 <div>
                   <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Detail Catatan / Keterangan</label>
-                  <textarea 
-                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all min-h-[80px]" 
+                  <textarea
+                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all min-h-12"
                     rows="3"
                     placeholder="Contoh: Makan 4 sate + 2 nasi kucing, janji bayar hari jumat."
                     value={notes}
