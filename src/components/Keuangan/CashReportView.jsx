@@ -387,7 +387,7 @@ export default function CashReportView() {
       {/* 4. EDIT BUDGETING MODAL */}
       {isEditing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsEditing(false)}>
-          <div className="bg-card w-full max-w-[500px] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 border border-border flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 border border-border flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-main/50">
               <div className="flex items-center gap-2.5">
                 <Sliders size={20} className="text-primary" />

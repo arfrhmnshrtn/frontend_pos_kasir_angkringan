@@ -19,7 +19,7 @@ export default function PrintReceiptModal({ isOpen, onClose, order }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm print:bg-transparent print:backdrop-blur-none" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm print:bg-transparent print:backdrop-blur-none" onClick={onClose}>
       
       {/* CSS Khusus untuk Pencetakan (Print) Murni */}
       <style>{`
@@ -52,7 +52,7 @@ export default function PrintReceiptModal({ isOpen, onClose, order }) {
       `}</style>
 
       <div 
-        className="bg-card w-full max-w-[360px] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 border border-border flex flex-col print-hide-bg" 
+        className="bg-card w-full max-w-sm rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 border border-border flex flex-col print-hide-bg" 
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-main/50 print-hide">

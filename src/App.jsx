@@ -14,12 +14,12 @@ import AddOrderModal from './components/Orders/AddOrderModal';
 import LoginView from './components/Auth/LoginView';
 import { UsersPage } from './pages/users/UsersPage';
 import { useAuth } from './hooks/useAuth';
-import { 
-  DollarSign, 
-  ShoppingBag, 
-  Utensils, 
-  Users, 
-  RefreshCw, 
+import {
+  DollarSign,
+  ShoppingBag,
+  Utensils,
+  Users,
+  RefreshCw,
   Download,
   Calendar,
   Layers,
@@ -34,7 +34,7 @@ import './index.css';
 
 export default function App() {
   const { isAuthenticated, user, role, loading } = useAuth();
-  
+
   // Local state for sidebar/theme
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -116,11 +116,11 @@ export default function App() {
 
   if (!isAuthenticated) {
     return (
-      <LoginView 
+      <LoginView
         onLoginSuccess={(role) => {
           // Temporarily just reload page to sync context if LoginView manual fetches it
           window.location.reload();
-        }} 
+        }}
       />
     );
   }
@@ -128,7 +128,7 @@ export default function App() {
   return (
     <div className="flex w-full min-h-screen bg-main text-text">
       {/* Left Sidebar */}
-      <Sidebar 
+      <Sidebar
         collapsed={collapsed}
         setCollapsed={setCollapsed}
         activeTab={activeTab}
@@ -140,7 +140,7 @@ export default function App() {
       {/* Main Content Outer Wrapper */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header Bar */}
-        <Header 
+        <Header
           darkTheme={darkTheme}
           setDarkTheme={setDarkTheme}
           setMobileOpen={setMobileOpen}
@@ -196,7 +196,7 @@ export default function App() {
             <>
               {/* Stat Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                <StatCard 
+                <StatCard
                   title="Total Omset Hari Ini"
                   value="Rp 1.850.000"
                   trend="+14.2%"
@@ -205,7 +205,7 @@ export default function App() {
                   colorClass="orange"
                   subtitle="vs kemarin (Rp 1.620.000)"
                 />
-                <StatCard 
+                <StatCard
                   title="Total Pesanan"
                   value="48 Order"
                   trend="+8.5%"
@@ -214,7 +214,7 @@ export default function App() {
                   colorClass="blue"
                   subtitle="12 pesanan diproses"
                 />
-                <StatCard 
+                <StatCard
                   title="Varian Menu Terjual"
                   value="182 Porsi"
                   trend="+18%"
@@ -223,7 +223,7 @@ export default function App() {
                   colorClass="green"
                   subtitle="Terbanyak: Sate Kulit"
                 />
-                <StatCard 
+                <StatCard
                   title="Pelanggan Hari Ini"
                   value="36 Orang"
                   trend="-2.1%"
@@ -238,7 +238,7 @@ export default function App() {
               <SalesChart />
 
               {/* Orders Data Table */}
-              <OrdersTable 
+              <OrdersTable
                 orders={orders}
                 setOrders={setOrders}
                 searchQuery={searchQuery}
@@ -247,7 +247,7 @@ export default function App() {
           )}
 
           {activeTab === 'pesanan' && (
-            <OrdersTable 
+            <OrdersTable
               orders={orders}
               setOrders={setOrders}
               searchQuery={searchQuery}
@@ -334,7 +334,7 @@ export default function App() {
           )}
 
           {activeTab === 'pengaturan' && (
-            <div className="bg-card border border-border rounded-xl shadow-sm p-6 flex flex-col gap-4 max-w-[600px]">
+            <div className="bg-card border border-border rounded-xl shadow-sm p-6 flex flex-col gap-4 max-w-full">
               <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center gap-2 font-bold text-text text-[1.05rem]">
                   <Settings size={20} className="text-primary" />
@@ -364,7 +364,7 @@ export default function App() {
       </div>
 
       {/* Add New Order Modal */}
-      <AddOrderModal 
+      <AddOrderModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddOrder={handleAddOrder}

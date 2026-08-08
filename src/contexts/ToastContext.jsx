@@ -33,15 +33,14 @@ export const ToastProvider = ({ children }) => {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-start p-4 rounded-xl shadow-lg border transition-all transform slide-in-from-right duration-300 ${
-              toast.type === 'success'
+            className={`pointer-events-auto flex items-start p-4 rounded-xl shadow-lg border transition-all transform slide-in-from-right duration-300 ${toast.type === 'success'
                 ? 'bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-950 dark:border-emerald-800 dark:text-emerald-100'
                 : toast.type === 'error'
-                ? 'bg-rose-50 border-rose-200 text-rose-900 dark:bg-rose-950 dark:border-rose-800 dark:text-rose-100'
-                : toast.type === 'warning'
-                ? 'bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-100'
-                : 'bg-blue-50 border-blue-200 text-blue-900 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-100'
-            }`}
+                  ? 'bg-rose-50 border-rose-200 text-rose-900 dark:bg-rose-950 dark:border-rose-800 dark:text-rose-100'
+                  : toast.type === 'warning'
+                    ? 'bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-100'
+                    : 'bg-blue-50 border-blue-200 text-blue-900 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-100'
+              }`}
           >
             <div className="mr-3 mt-0.5 shrink-0">
               {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
@@ -49,7 +48,7 @@ export const ToastProvider = ({ children }) => {
               {toast.type === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />}
               {toast.type === 'info' && <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
             </div>
-            <div className="flex-1 text-sm font-medium leading-relaxed break-words">{toast.message}</div>
+            <div className="flex-1 text-sm font-medium leading-relaxed ">{toast.message}</div>
             <button
               onClick={() => removeToast(toast.id)}
               className="ml-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"

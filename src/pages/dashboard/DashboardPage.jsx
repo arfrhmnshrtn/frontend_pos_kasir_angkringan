@@ -59,7 +59,7 @@ export const DashboardPage = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-blue-700 via-blue-600 to-indigo-700 p-6 sm:p-8 text-white shadow-xl">
         <div className="relative z-10 max-w-xl">
           <Badge variant="primary" className="bg-white/20 text-white backdrop-blur-md border border-white/20 mb-3">
             {roleName} DASHBOARD
