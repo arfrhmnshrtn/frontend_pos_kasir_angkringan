@@ -173,7 +173,7 @@ export default function App() {
               </p>
             </div>
 
-            <div className="flex gap-2.5 items-center">
+            {/* <div className="flex gap-2.5 items-center">
               <div className="bg-card border border-border px-3 py-1.5 rounded-lg text-xs font-semibold text-text-secondary flex items-center gap-1.5 shadow-sm">
                 <Calendar size={14} />
                 <span>Kamis, 6 Ags 2026</span>
@@ -188,7 +188,7 @@ export default function App() {
                 <Download size={16} />
                 <span>Export Data</span>
               </button>
-            </div>
+            </div> */}
           </div>
 
           {/* Conditional View Rendering based on active tab */}

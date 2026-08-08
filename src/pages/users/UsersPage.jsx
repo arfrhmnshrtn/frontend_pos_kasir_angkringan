@@ -80,7 +80,7 @@ export const UsersPage = () => {
         search: search.trim() || undefined,
       };
       const res = await userService.getUsers(params);
-      
+
       const data = res?.data || res;
       if (Array.isArray(data)) {
         setUsers(data);
@@ -269,16 +269,6 @@ export const UsersPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-text mb-1 tracking-tight">Kelola Kasir & User</h1>
-          <p className="text-sm text-text-secondary">Manajemen akun kasir, role, hak akses, dan keamanan PIN.</p>
-        </div>
-        <Button onClick={handleOpenCreate} icon={Plus} size="md" className="font-semibold shadow-md">
-          Tambah Kasir
-        </Button>
-      </div>
 
       {/* Action Bar / Search */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
@@ -295,6 +285,12 @@ export const UsersPage = () => {
         </div>
         <Button variant="ghost" size="sm" onClick={fetchUsers} icon={RefreshCw}>
           Muat Ulang
+        </Button>
+      </div>
+
+      <div className="flex justify-end">
+        <Button onClick={handleOpenCreate} icon={Plus} size="md" className="font-semibold shadow-md">
+          Tambah Kasir
         </Button>
       </div>
 
@@ -339,36 +335,35 @@ export const UsersPage = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                       <button
-                         onClick={() => handleOpenEdit(item)}
-                         title="Edit User"
-                         className="p-1.5 rounded-lg text-text-secondary hover:text-primary transition-colors cursor-pointer"
-                       >
-                         <Edit2 className="w-4 h-4" />
-                       </button>
-                       <button
-                         onClick={() => handleOpenResetPin(item)}
-                         title="Reset PIN"
-                         className="p-1.5 rounded-lg text-text-secondary hover:text-amber-500 transition-colors cursor-pointer"
-                       >
-                         <Key className="w-4 h-4" />
-                       </button>
-                       <button
-                         onClick={() => handleOpenStatusConfirm(item)}
-                         title={isActive ? 'Nonaktifkan Kasir' : 'Aktifkan Kasir'}
-                         className={`p-1.5 rounded-lg transition-colors cursor-pointer text-text-secondary ${
-                           isActive ? 'hover:text-rose-500' : 'hover:text-emerald-500'
-                         }`}
-                       >
-                         {isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
-                       </button>
-                       <button
-                         onClick={() => handleOpenDeleteConfirm(item)}
-                         title="Hapus User"
-                         className="p-1.5 rounded-lg text-text-secondary hover:text-rose-500 transition-colors cursor-pointer"
-                       >
-                         <Trash2 className="w-4 h-4" />
-                       </button>
+                      <button
+                        onClick={() => handleOpenEdit(item)}
+                        title="Edit User"
+                        className="p-1.5 rounded-lg text-text-secondary hover:text-primary transition-colors cursor-pointer"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleOpenResetPin(item)}
+                        title="Reset PIN"
+                        className="p-1.5 rounded-lg text-text-secondary hover:text-amber-500 transition-colors cursor-pointer"
+                      >
+                        <Key className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleOpenStatusConfirm(item)}
+                        title={isActive ? 'Nonaktifkan Kasir' : 'Aktifkan Kasir'}
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer text-text-secondary ${isActive ? 'hover:text-rose-500' : 'hover:text-emerald-500'
+                          }`}
+                      >
+                        {isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                      </button>
+                      <button
+                        onClick={() => handleOpenDeleteConfirm(item)}
+                        title="Hapus User"
+                        className="p-1.5 rounded-lg text-text-secondary hover:text-rose-500 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -499,9 +494,8 @@ export const UsersPage = () => {
         onClose={() => setIsStatusConfirmOpen(false)}
         onConfirm={handleToggleStatus}
         title="Ubah Status Kasir"
-        message={`Apakah Anda yakin ingin mengubah status ${selectedUser?.name} menjadi ${
-          selectedUser?.status === 'ACTIVE' || selectedUser?.status === 'aktif' ? 'NONAKTIF' : 'AKTIF'
-        }?`}
+        message={`Apakah Anda yakin ingin mengubah status ${selectedUser?.name} menjadi ${selectedUser?.status === 'ACTIVE' || selectedUser?.status === 'aktif' ? 'NONAKTIF' : 'AKTIF'
+          }?`}
         variant="warning"
         isLoading={submitting}
       />
