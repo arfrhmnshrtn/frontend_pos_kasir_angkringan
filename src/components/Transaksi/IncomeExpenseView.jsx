@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  Plus, 
-  Search, 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
-  Filter, 
-  X, 
+import {
+  ArrowUpRight,
+  ArrowDownLeft,
+  Plus,
+  Search,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Filter,
+  X,
   Trash2,
   Receipt,
   FileText,
@@ -21,10 +21,23 @@ export default function IncomeExpenseView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('semua');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   const [transactions, setTransactions] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const toast = useToast();
+
+  const fetchCategories = async () => {
+    try {
+      const res = await transaksiService.getAllCategories();
+      if (res?.success) {
+        setCategories(res.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch categories:', err);
+    }
+  };
 
   const formatDate = (isoString) => {
     if (!isoString) return '-';
@@ -62,53 +75,92 @@ export default function IncomeExpenseView() {
 
   useEffect(() => {
     fetchTransactions();
+    fetchCategories();
   }, []);
 
   // Form State for Modal
-  const [trxType, setTrxType] = useState('Pengeluaran'); // 'Pemasukan' or 'Pengeluaran'
-  const [trxCategory, setTrxCategory] = useState('Pengeluaran Lainnya');
+  const [trxType, setTrxType] = useState('pengeluaran'); // 'pemasukan' or 'pengeluaran'
+  const [trxCategory, setTrxCategory] = useState(''); // ID of the category
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Tunai');
   const [description, setDescription] = useState('');
+  const [isSubmittingTrx, setIsSubmittingTrx] = useState(false);
 
-  const categoryOptions = {
-    Pemasukan: ['Penjualan POS', 'Pemasukan Lainnya'],
-    Pengeluaran: ['Belanja Bahan Baku', 'Operasional', 'Gaji Karyawan', 'Pengeluaran Lainnya']
-  };
+  // Form State for Category Modal
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatType, setNewCatType] = useState('pengeluaran');
+  const [isSubmittingCat, setIsSubmittingCat] = useState(false);
+
+  const availableCategories = categories.filter(c => c.jenis === trxType);
+
+  useEffect(() => {
+    if (availableCategories.length > 0 && !availableCategories.find(c => c.id === trxCategory)) {
+      setTrxCategory(availableCategories[0].id);
+    }
+  }, [trxType, availableCategories, trxCategory]);
 
   const handleTypeChange = (newType) => {
     setTrxType(newType);
-    setTrxCategory(categoryOptions[newType][0]);
   };
 
-  const handleAddTransaction = (e) => {
+  const handleAddTransaction = async (e) => {
     e.preventDefault();
-    if (!amount || Number(amount) <= 0) return;
+    if (!amount || Number(amount) <= 0 || !trxCategory) {
+      toast.error('Mohon lengkapi data transaksi dengan benar');
+      return;
+    }
 
-    const now = new Date();
-    const formattedDate = `${now.getDate()} Ags 2026 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-    const newTrx = {
-      id: `TRX-${Math.floor(100 + Math.random() * 900)}`,
-      date: formattedDate,
-      type: trxType,
-      category: trxCategory,
-      amount: Number(amount),
-      paymentMethod,
-      description: description || '-',
-      loggedBy: 'Mas Pak Admin'
-    };
-
-    setTransactions([newTrx, ...transactions]);
-    setIsModalOpen(false);
-
-    // Reset Form
-    setAmount('');
-    setDescription('');
+    setIsSubmittingTrx(true);
+    try {
+      const payload = {
+        id_kategori: Number(trxCategory),
+        nominal: Number(amount),
+        metode_pembayaran: paymentMethod.toLowerCase(),
+        keterangan: description || '-'
+      };
+      
+      const res = await transaksiService.createTransaction(trxType, payload);
+      
+      if (res?.success) {
+        toast.success('Transaksi berhasil ditambahkan');
+        setIsModalOpen(false);
+        setAmount('');
+        setDescription('');
+        fetchTransactions(); // Refresh table
+      }
+    } catch (err) {
+      toast.error(err?.message || 'Gagal menyimpan transaksi');
+    } finally {
+      setIsSubmittingTrx(false);
+    }
   };
 
   const handleDeleteTrx = (id) => {
     setTransactions(prev => prev.filter(t => t.id !== id));
+  };
+
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    if (!newCatName.trim()) return;
+    
+    setIsSubmittingCat(true);
+    try {
+      const payload = {
+        nama: newCatName,
+        jenis: newCatType
+      };
+      const res = await transaksiService.createCategory(payload);
+      if (res?.success) {
+        toast.success(`Kategori "${newCatName}" berhasil ditambahkan`);
+        setIsCategoryModalOpen(false);
+        setNewCatName('');
+        fetchCategories();
+      }
+    } catch (err) {
+      toast.error(err?.message || 'Gagal menambahkan kategori baru');
+    } finally {
+      setIsSubmittingCat(false);
+    }
   };
 
   // Calculations
@@ -133,8 +185,8 @@ export default function IncomeExpenseView() {
   // Filtering
   const filteredTransactions = transactions.filter(t => {
     const matchSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        t.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        t.loggedBy.toLowerCase().includes(searchQuery.toLowerCase());
+      t.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.loggedBy.toLowerCase().includes(searchQuery.toLowerCase());
 
     let matchType = true;
     if (filterType === 'pemasukan') matchType = t.type === 'Pemasukan';
@@ -220,14 +272,18 @@ export default function IncomeExpenseView() {
           <div className="flex gap-3 items-center w-full sm:w-auto">
             <div className="relative flex-1 sm:w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
-              <input 
-                type="text" 
-                className="w-full pl-9 pr-4 py-2 bg-main border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" 
+              <input
+                type="text"
+                className="w-full pl-9 pr-4 py-2 bg-main border border-border rounded-lg text-sm text-text focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all"
                 placeholder="Cari transaksi..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            <button className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-transform shadow-md hover:-translate-y-px whitespace-nowrap" onClick={() => setIsCategoryModalOpen(true)}>
+              <Plus size={16} />
+              <span className="hidden sm:inline">Buat Kategori Baru</span>
+            </button>
             <button className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-transform shadow-md hover:-translate-y-px whitespace-nowrap" onClick={() => setIsModalOpen(true)}>
               <Plus size={16} />
               <span className="hidden sm:inline">Catat Transaksi Baru</span>
@@ -283,9 +339,8 @@ export default function IncomeExpenseView() {
                     <td className="px-4 py-3.5 font-bold text-muted">{t.id}</td>
                     <td className="px-4 py-3.5 text-xs text-text-secondary">{t.date}</td>
                     <td className="px-4 py-3.5">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.7rem] font-bold ${
-                        t.type === 'Pemasukan' ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'
-                      }`}>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.7rem] font-bold ${t.type === 'Pemasukan' ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger'
+                        }`}>
                         {t.type === 'Pemasukan' ? <ArrowUpRight size={14} /> : <ArrowDownLeft size={14} />}
                         {t.type}
                       </span>
@@ -308,7 +363,7 @@ export default function IncomeExpenseView() {
                     </td>
                     <td className="px-4 py-3.5 text-xs text-text">{t.loggedBy}</td>
                     <td className="px-4 py-3.5 text-right flex justify-end">
-                      <button 
+                      <button
                         className="w-8 h-8 rounded-lg flex items-center justify-center text-danger hover:text-white hover:bg-danger transition-colors cursor-pointer"
                         title="Hapus Transaksi"
                         onClick={() => handleDeleteTrx(t.rawId)}
@@ -352,8 +407,8 @@ export default function IncomeExpenseView() {
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      className={`py-2 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all border ${trxType === 'Pemasukan' ? 'bg-success-bg text-success border-success' : 'bg-main text-text-secondary border-border hover:bg-border/50'}`}
-                      onClick={() => handleTypeChange('Pemasukan')}
+                      className={`py-2 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all border ${trxType === 'pemasukan' ? 'bg-success-bg text-success border-success' : 'bg-main text-text-secondary border-border hover:bg-border/50'}`}
+                      onClick={() => handleTypeChange('pemasukan')}
                     >
                       <ArrowUpRight size={16} />
                       Pemasukan
@@ -361,8 +416,8 @@ export default function IncomeExpenseView() {
 
                     <button
                       type="button"
-                      className={`py-2 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all border ${trxType === 'Pengeluaran' ? 'bg-danger-bg text-danger border-danger' : 'bg-main text-text-secondary border-border hover:bg-border/50'}`}
-                      onClick={() => handleTypeChange('Pengeluaran')}
+                      className={`py-2 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all border ${trxType === 'pengeluaran' ? 'bg-danger-bg text-danger border-danger' : 'bg-main text-text-secondary border-border hover:bg-border/50'}`}
+                      onClick={() => handleTypeChange('pengeluaran')}
                     >
                       <ArrowDownLeft size={16} />
                       Pengeluaran
@@ -372,14 +427,16 @@ export default function IncomeExpenseView() {
 
                 <div>
                   <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Kategori Transaksi</label>
-                  <select 
-                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all cursor-pointer" 
-                    value={trxCategory} 
-                    onChange={(e) => setTrxCategory(e.target.value)}
+                  <select
+                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all cursor-pointer"
+                    value={trxCategory}
+                    onChange={(e) => setTrxCategory(Number(e.target.value))}
+                    required
                   >
-                    {categoryOptions[trxType].map(cat => (
-                      <option key={cat} value={cat}>
-                        {cat}
+                    {availableCategories.length === 0 && <option value="" disabled>Belum ada kategori</option>}
+                    {availableCategories.map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.nama}
                       </option>
                     ))}
                   </select>
@@ -388,9 +445,9 @@ export default function IncomeExpenseView() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Nominal (Rp)</label>
-                    <input 
-                      type="number" 
-                      className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" 
+                    <input
+                      type="number"
+                      className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all"
                       placeholder="Contoh: 50000"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
@@ -401,9 +458,9 @@ export default function IncomeExpenseView() {
 
                   <div>
                     <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Metode Pembayaran</label>
-                    <select 
-                      className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all cursor-pointer" 
-                      value={paymentMethod} 
+                    <select
+                      className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all cursor-pointer"
+                      value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                     >
                       <option value="Tunai">Tunai / Cash</option>
@@ -415,10 +472,10 @@ export default function IncomeExpenseView() {
 
                 <div>
                   <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Keterangan / Rincian</label>
-                  <textarea 
-                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all min-h-12" 
+                  <textarea
+                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all min-h-12"
                     rows="3"
-                    placeholder={trxCategory.includes('Lainnya') ? "Tuliskan rincian transaksi lainnya..." : "Tuliskan keterangan transaksi..."}
+                    placeholder={availableCategories.find(c => c.id === trxCategory)?.nama?.includes('Lainnya') ? "Tuliskan rincian transaksi lainnya..." : "Tuliskan keterangan transaksi..."}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
@@ -429,9 +486,65 @@ export default function IncomeExpenseView() {
                 <button type="button" className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-main text-text border border-border hover:bg-border/50 transition-colors" onClick={() => setIsModalOpen(false)}>
                   Batal
                 </button>
-                <button type="submit" className="px-5 py-2.5 rounded-lg text-sm font-bold bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg flex gap-2 items-center hover:-translate-y-px transition-all">
+                <button type="submit" disabled={isSubmittingTrx || !trxCategory} className="px-5 py-2.5 rounded-lg text-sm font-bold bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg flex gap-2 items-center hover:-translate-y-px transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                   <Plus size={16} />
-                  Simpan Transaksi
+                  {isSubmittingTrx ? 'Menyimpan...' : 'Simpan Transaksi'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Add Category */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsCategoryModalOpen(false)}>
+          <div className="bg-card w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 border border-border flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-main/50">
+              <div className="flex items-center gap-2.5">
+                <Plus size={20} className="text-primary" />
+                <h3 className="font-bold text-lg text-text m-0">Buat Kategori Baru</h3>
+              </div>
+              <button className="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:text-text hover:bg-border/50 transition-colors" onClick={() => setIsCategoryModalOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddCategory} className="flex flex-col">
+              <div className="p-6 flex flex-col gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Nama Kategori</label>
+                  <input
+                    type="text"
+                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all"
+                    placeholder="Contoh: Pengeluaran Lainnya"
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Jenis Kategori</label>
+                  <select
+                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all cursor-pointer"
+                    value={newCatType}
+                    onChange={(e) => setNewCatType(e.target.value)}
+                    required
+                  >
+                    <option value="pengeluaran">Pengeluaran</option>
+                    <option value="pemasukan">Pemasukan</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 px-6 py-4 border-t border-border bg-main/30">
+                <button type="button" className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-main text-text border border-border hover:bg-border/50 transition-colors" onClick={() => setIsCategoryModalOpen(false)}>
+                  Batal
+                </button>
+                <button type="submit" disabled={isSubmittingCat} className="px-5 py-2.5 rounded-lg text-sm font-bold bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg flex gap-2 items-center hover:-translate-y-px transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                  <Plus size={16} />
+                  {isSubmittingCat ? 'Menyimpan...' : 'Simpan Kategori'}
                 </button>
               </div>
             </form>
