@@ -219,7 +219,7 @@ export default function WasteManagementView() {
           </div>
 
           <div className="flex gap-3 items-center w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-[220px]">
+            <div className="relative flex-1 sm:w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
               <input 
                 type="text" 
@@ -286,7 +286,7 @@ export default function WasteManagementView() {
                         {log.reason}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-xs text-text-secondary max-w-[200px]">
+                    <td className="px-4 py-3.5 text-xs text-text-secondary max-w-full">
                       {log.notes}
                     </td>
                     <td className="px-4 py-3.5 text-xs text-text">{log.loggedBy}</td>
@@ -316,7 +316,7 @@ export default function WasteManagementView() {
       {/* Modal Add Waste Record */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}>
-          <div className="bg-card w-full max-w-[500px] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 border border-border flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card w-full max-w-full rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 border border-border flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-main/50">
               <div className="flex items-center gap-2.5">
                 <Trash2 size={20} className="text-danger" />
@@ -389,7 +389,7 @@ export default function WasteManagementView() {
                 <div>
                   <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Catatan Tambahan (Keterangan)</label>
                   <textarea 
-                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all min-h-[80px]" 
+                    className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all min-h-full" 
                     rows="3"
                     placeholder="Contoh: Hujan deras membuat angkringan sepi, sisa nasi kucing basi."
                     value={notes}
