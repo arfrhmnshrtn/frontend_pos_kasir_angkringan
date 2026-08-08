@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowUpRight, 
   ArrowDownLeft, 
@@ -14,85 +14,55 @@ import {
   FileText,
   Calendar
 } from 'lucide-react';
+import { transaksiService } from '../../services/transaksi.service';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function IncomeExpenseView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('semua');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Initial Sample Transaction Logs
-  const [transactions, setTransactions] = useState([
-    {
-      id: 'TRX-101',
-      date: '06 Ags 2026 20:30',
-      type: 'Pemasukan',
-      category: 'Penjualan POS',
-      amount: 1850000,
-      paymentMethod: 'QRIS & Cash',
-      description: 'Total Omset Penjualan Angkringan Malam Ini',
-      loggedBy: 'Kasir Andi'
-    },
-    {
-      id: 'TRX-102',
-      date: '06 Ags 2026 16:00',
-      type: 'Pengeluaran',
-      category: 'Belanja Bahan Baku',
-      amount: 650000,
-      paymentMethod: 'Tunai',
-      description: 'Belanja sate, ayam, daging, & bumbu dapur di pasar',
-      loggedBy: 'Mas Pak Admin'
-    },
-    {
-      id: 'TRX-103',
-      date: '06 Ags 2026 14:15',
-      type: 'Pemasukan',
-      category: 'Pemasukan Lainnya',
-      amount: 250000,
-      paymentMethod: 'Transfer',
-      description: 'Sewa lapak penitipan titipan kue basah & snack mitra',
-      loggedBy: 'Mas Pak Admin'
-    },
-    {
-      id: 'TRX-104',
-      date: '05 Ags 2026 21:00',
-      type: 'Pengeluaran',
-      category: 'Pengeluaran Lainnya',
-      amount: 45000,
-      paymentMethod: 'Tunai',
-      description: 'Iuran kebersihan RT & keamanan pasar harian',
-      loggedBy: 'Kasir Budi'
-    },
-    {
-      id: 'TRX-105',
-      date: '05 Ags 2026 17:30',
-      type: 'Pengeluaran',
-      category: 'Operasional',
-      amount: 120000,
-      paymentMethod: 'Tunai',
-      description: 'Beli isi ulang tabung gas LPG 3kg (4 tabung)',
-      loggedBy: 'Mas Pak Admin'
-    },
-    {
-      id: 'TRX-106',
-      date: '04 Ags 2026 15:00',
-      type: 'Pemasukan',
-      category: 'Pemasukan Lainnya',
-      amount: 80000,
-      paymentMethod: 'Tunai',
-      description: 'Penjualan minyak goreng bekas (jelantah) ke pengepul',
-      loggedBy: 'Staff Maya'
-    },
-    {
-      id: 'TRX-107',
-      date: '04 Ags 2026 10:00',
-      type: 'Pengeluaran',
-      category: 'Pengeluaran Lainnya',
-      amount: 75000,
-      paymentMethod: 'Tunai',
-      description: 'Servis regulator kompor mawar angkringan yang bocor',
-      loggedBy: 'Mas Pak Admin'
+  const [transactions, setTransactions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const toast = useToast();
+
+  const formatDate = (isoString) => {
+    if (!isoString) return '-';
+    const dateObj = new Date(isoString);
+    const pad = (n) => n.toString().padStart(2, '0');
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+    return `${pad(dateObj.getDate())} ${monthNames[dateObj.getMonth()]} ${dateObj.getFullYear()} ${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}`;
+  };
+
+  const fetchTransactions = async () => {
+    setIsLoading(true);
+    try {
+      const res = await transaksiService.getAll();
+      if (res?.success) {
+        const mappedData = res.data.map(t => ({
+          id: t.nomor_transaksi || `TRX-${t.id}`,
+          rawId: t.id,
+          date: formatDate(t.created_at),
+          type: t.jenis === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran',
+          category: t.kategori?.nama || 'Lainnya',
+          amount: Number(t.nominal),
+          paymentMethod: (t.metode_pembayaran || '').toUpperCase(),
+          description: t.keterangan || '-',
+          loggedBy: t.user?.fullname || '-'
+        }));
+        setTransactions(mappedData);
+      }
+    } catch (err) {
+      toast.error('Gagal memuat data transaksi keuangan');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
-  ]);
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
 
   // Form State for Modal
   const [trxType, setTrxType] = useState('Pengeluaran'); // 'Pemasukan' or 'Pengeluaran'
@@ -301,7 +271,13 @@ export default function IncomeExpenseView() {
               </tr>
             </thead>
             <tbody>
-              {filteredTransactions.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="9" className="text-center py-8 text-muted">
+                    Memuat data transaksi...
+                  </td>
+                </tr>
+              ) : filteredTransactions.length > 0 ? (
                 filteredTransactions.map(t => (
                   <tr key={t.id} className="border-b border-border hover:bg-main/30 transition-colors">
                     <td className="px-4 py-3.5 font-bold text-muted">{t.id}</td>
@@ -335,7 +311,7 @@ export default function IncomeExpenseView() {
                       <button 
                         className="w-8 h-8 rounded-lg flex items-center justify-center text-danger hover:text-white hover:bg-danger transition-colors cursor-pointer"
                         title="Hapus Transaksi"
-                        onClick={() => handleDeleteTrx(t.id)}
+                        onClick={() => handleDeleteTrx(t.rawId)}
                       >
                         <Trash2 size={16} />
                       </button>
