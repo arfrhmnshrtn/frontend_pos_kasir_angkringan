@@ -6,6 +6,7 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
 });
 
@@ -72,9 +73,17 @@ api.interceptors.response.use(
       }
 
       try {
-        const response = await axios.post(`${API_BASE_URL}${ENDPOINTS.AUTH.REFRESH}`, {
-          refreshToken,
-        });
+        const response = await axios.post(
+          `${API_BASE_URL}${ENDPOINTS.AUTH.REFRESH}`,
+          {
+            refreshToken,
+          },
+          {
+            headers: {
+              'ngrok-skip-browser-warning': 'true',
+            },
+          }
+        );
 
         const data = response.data?.data || response.data;
         const newAccessToken = data.accessToken || data.token;
