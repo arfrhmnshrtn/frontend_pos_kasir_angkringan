@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { usePermission } from '../../hooks/usePermission';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import {
   LayoutDashboard,
@@ -22,6 +23,7 @@ import {
 
 export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab, mobileOpen, setMobileOpen }) {
   const { user, role, logout } = useAuth();
+  const { hasPermission } = usePermission();
   const userRoleStr = typeof role === 'string' ? role.toUpperCase() : role?.name?.toUpperCase() || 'KASIR';
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
@@ -57,10 +59,20 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
   const allowedKasirMenus = ['dashboard', 'pos', 'pesanan', 'katalog'];
 
   const filteredMenuItems = menuItems.map(group => {
-    if (userRoleStr === 'OWNER') return group;
+    let items = group.items;
+    
+    // Filter out hutang if no permission
+    if (!hasPermission('debt.read')) {
+      items = items.filter(item => item.id !== 'hutang');
+    }
+
+    if (userRoleStr === 'OWNER') {
+      return { ...group, items };
+    }
+    
     return {
       ...group,
-      items: group.items.filter(item => allowedKasirMenus.includes(item.id))
+      items: items.filter(item => allowedKasirMenus.includes(item.id))
     };
   }).filter(group => group.items.length > 0);
 

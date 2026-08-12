@@ -23,7 +23,7 @@ export const userService = {
   },
 
   resetUserPin: async (id, newPin) => {
-    return await api.patch(ENDPOINTS.USERS.RESET_PIN(id), { pin: newPin });
+    return await api.patch(ENDPOINTS.USERS.RESET_PIN(id), { newPin });
   },
 
   deleteUser: async (id) => {

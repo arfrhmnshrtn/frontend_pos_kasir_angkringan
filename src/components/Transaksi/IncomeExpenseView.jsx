@@ -12,8 +12,11 @@ import {
   Trash2,
   Receipt,
   FileText,
-  Calendar
+  Calendar,
+  ShoppingBag,
+  BadgeDollarSign
 } from 'lucide-react';
+import api from '../../services/axios';
 import { transaksiService } from '../../services/transaksi.service';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -21,9 +24,14 @@ export default function IncomeExpenseView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('semua');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Date range filter state
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   const [transactions, setTransactions] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const toast = useToast();
@@ -55,6 +63,7 @@ export default function IncomeExpenseView() {
         const mappedData = res.data.map(t => ({
           id: t.nomor_transaksi || `TRX-${t.id}`,
           rawId: t.id,
+          rawDate: t.created_at,
           date: formatDate(t.created_at),
           type: t.jenis === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran',
           category: t.kategori?.nama || 'Lainnya',
@@ -76,7 +85,21 @@ export default function IncomeExpenseView() {
   useEffect(() => {
     fetchTransactions();
     fetchCategories();
+    fetchOrders();
   }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const result = await api.get('/pos-kasir');
+      let actualData = [];
+      if (result && Array.isArray(result.data)) actualData = result.data;
+      else if (result && result.data && Array.isArray(result.data.data)) actualData = result.data.data;
+      else if (Array.isArray(result)) actualData = result;
+      setOrders(actualData);
+    } catch (err) {
+      console.error('Failed to fetch orders for profit calc:', err);
+    }
+  };
 
   // Form State for Modal
   const [trxType, setTrxType] = useState('pengeluaran'); // 'pemasukan' or 'pengeluaran'
@@ -118,9 +141,9 @@ export default function IncomeExpenseView() {
         metode_pembayaran: paymentMethod.toLowerCase(),
         keterangan: description || '-'
       };
-      
+
       const res = await transaksiService.createTransaction(trxType, payload);
-      
+
       if (res?.success) {
         toast.success('Transaksi berhasil ditambahkan');
         setIsModalOpen(false);
@@ -142,7 +165,7 @@ export default function IncomeExpenseView() {
   const handleAddCategory = async (e) => {
     e.preventDefault();
     if (!newCatName.trim()) return;
-    
+
     setIsSubmittingCat(true);
     try {
       const payload = {
@@ -163,27 +186,70 @@ export default function IncomeExpenseView() {
     }
   };
 
-  // Calculations
-  const totalIncome = transactions
+  // Date range filtering helper
+  const isInDateRange = (rawDate) => {
+    if (!startDate && !endDate) return true;
+    if (!rawDate) return false;
+    const txDate = new Date(rawDate);
+    if (startDate) {
+      const from = new Date(startDate);
+      from.setHours(0, 0, 0, 0);
+      if (txDate < from) return false;
+    }
+    if (endDate) {
+      const to = new Date(endDate);
+      to.setHours(23, 59, 59, 999);
+      if (txDate > to) return false;
+    }
+    return true;
+  };
+
+  // Apply date range to transactions first for stat cards
+  const dateFilteredTransactions = transactions.filter(t => isInDateRange(t.rawDate));
+
+  // Apply date range to orders for profit calculation
+  const dateFilteredOrders = orders.filter(o => isInDateRange(o.created_at));
+
+  // Sales profit calculation (harga_jual - harga_modal) * jumlah for lunas orders
+  const salesStats = dateFilteredOrders
+    .filter(o => o.status === 'lunas')
+    .reduce((acc, order) => {
+      const details = order.detail_pesanan || [];
+      details.forEach(d => {
+        const hargaJual = d.harga || 0;
+        const hargaModal = d.menu?.harga_modal || 0;
+        const qty = d.jumlah || 0;
+        acc.totalRevenue += hargaJual * qty;
+        acc.totalCost += hargaModal * qty;
+      });
+      acc.totalOrders += 1;
+      return acc;
+    }, { totalRevenue: 0, totalCost: 0, totalOrders: 0 });
+
+  const grossProfit = salesStats.totalRevenue - salesStats.totalCost;
+  const profitMargin = salesStats.totalRevenue > 0 ? ((grossProfit / salesStats.totalRevenue) * 100).toFixed(1) : 0;
+
+  // Calculations (respect date range)
+  const totalIncome = dateFilteredTransactions
     .filter(t => t.type === 'Pemasukan')
     .reduce((acc, t) => acc + t.amount, 0);
 
-  const totalOtherIncome = transactions
+  const totalOtherIncome = dateFilteredTransactions
     .filter(t => t.type === 'Pemasukan' && t.category === 'Pemasukan Lainnya')
     .reduce((acc, t) => acc + t.amount, 0);
 
-  const totalExpense = transactions
+  const totalExpense = dateFilteredTransactions
     .filter(t => t.type === 'Pengeluaran')
     .reduce((acc, t) => acc + t.amount, 0);
 
-  const totalOtherExpense = transactions
+  const totalOtherExpense = dateFilteredTransactions
     .filter(t => t.type === 'Pengeluaran' && t.category === 'Pengeluaran Lainnya')
     .reduce((acc, t) => acc + t.amount, 0);
 
   const netCashFlow = totalIncome - totalExpense;
 
-  // Filtering
-  const filteredTransactions = transactions.filter(t => {
+  // Filtering (search + type + date range)
+  const filteredTransactions = dateFilteredTransactions.filter(t => {
     const matchSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       t.loggedBy.toLowerCase().includes(searchQuery.toLowerCase());
@@ -199,64 +265,105 @@ export default function IncomeExpenseView() {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Overview Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md flex flex-col gap-3 relative overflow-hidden">
+      {/* Compact Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+        {/* Total Penjualan */}
+        <div className="bg-card border border-border rounded-lg p-3.5 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <div className="w-11 h-11 rounded-lg flex items-center justify-center bg-emerald-500/10 text-emerald-500">
-              <ArrowUpRight size={22} />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-md flex items-center justify-center bg-indigo-500/10 text-indigo-500">
+                <ShoppingBag size={16} />
+              </div>
+              <span className="text-xs font-semibold text-text-secondary">Penjualan</span>
             </div>
-            <div className="inline-flex items-center gap-1 text-[0.75rem] font-bold px-2 py-1 rounded-full bg-success-bg text-success">
-              <TrendingUp size={14} />
-              <span>Inflow</span>
-            </div>
+            <span className="text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full bg-info-bg text-info">
+              {salesStats.totalOrders} Lunas
+            </span>
           </div>
-          <div>
-            <div className="text-[1.6rem] font-extrabold text-success tracking-tight">
-              Rp {totalIncome.toLocaleString('id-ID')}
-            </div>
-            <div className="text-[0.85rem] text-text-secondary font-medium">Total Pemasukan</div>
-            <div className="text-[0.75rem] text-muted mt-1">
-              Termasuk Pemasukan Lainnya: <strong className="text-text-secondary">Rp {totalOtherIncome.toLocaleString('id-ID')}</strong>
-            </div>
+          <div className="text-lg font-extrabold text-info tracking-tight leading-tight">
+            Rp {salesStats.totalRevenue.toLocaleString('id-ID')}
+          </div>
+          <div className="text-[0.65rem] text-muted leading-snug">
+            Modal: <strong className="text-text-secondary">Rp {salesStats.totalCost.toLocaleString('id-ID')}</strong>
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md flex flex-col gap-3 relative overflow-hidden">
+        {/* Laba Bersih */}
+        <div className="bg-card border border-border rounded-lg p-3.5 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <div className="w-11 h-11 rounded-lg flex items-center justify-center bg-red-500/10 text-red-500">
-              <ArrowDownLeft size={22} />
+            <div className="flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-md flex items-center justify-center ${grossProfit >= 0 ? 'bg-amber-500/10 text-amber-500' : 'bg-red-500/10 text-red-500'}`}>
+                <BadgeDollarSign size={16} />
+              </div>
+              <span className="text-xs font-semibold text-text-secondary">Laba Bersih</span>
             </div>
-            <div className="inline-flex items-center gap-1 text-[0.75rem] font-bold px-2 py-1 rounded-full bg-danger-bg text-danger">
-              <TrendingDown size={14} />
-              <span>Outflow</span>
-            </div>
+            <span className={`text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full ${grossProfit >= 0 ? 'bg-warning-bg text-amber-700' : 'bg-danger-bg text-danger'}`}>
+              {profitMargin}%
+            </span>
           </div>
-          <div>
-            <div className="text-[1.6rem] font-extrabold text-danger tracking-tight">
-              Rp {totalExpense.toLocaleString('id-ID')}
-            </div>
-            <div className="text-[0.85rem] text-text-secondary font-medium">Total Pengeluaran</div>
-            <div className="text-[0.75rem] text-muted mt-1">
-              Termasuk Pengeluaran Lainnya: <strong className="text-text-secondary">Rp {totalOtherExpense.toLocaleString('id-ID')}</strong>
-            </div>
+          <div className={`text-lg font-extrabold tracking-tight leading-tight ${grossProfit >= 0 ? 'text-amber-600 dark:text-amber-400' : 'text-danger'}`}>
+            Rp {grossProfit.toLocaleString('id-ID')}
+          </div>
+          <div className="text-[0.65rem] text-muted leading-snug">
+            Jual &minus; modal pesanan lunas
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md flex flex-col gap-3 relative overflow-hidden">
+        {/* Total Pemasukan */}
+        <div className="bg-card border border-border rounded-lg p-3.5 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <div className="w-11 h-11 rounded-lg flex items-center justify-center bg-blue-500/10 text-blue-500">
-              <DollarSign size={22} />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-md flex items-center justify-center bg-emerald-500/10 text-emerald-500">
+                <ArrowUpRight size={16} />
+              </div>
+              <span className="text-xs font-semibold text-text-secondary">Pemasukan</span>
             </div>
+            <span className="text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full bg-success-bg text-success">
+              Inflow
+            </span>
           </div>
-          <div>
-            <div className="text-[1.6rem] font-extrabold text-text tracking-tight">
-              Rp {netCashFlow.toLocaleString('id-ID')}
+          <div className="text-lg font-extrabold text-success tracking-tight leading-tight">
+            Rp {totalIncome.toLocaleString('id-ID')}
+          </div>
+          <div className="text-[0.65rem] text-muted leading-snug">
+            Lainnya: <strong className="text-text-secondary">Rp {totalOtherIncome.toLocaleString('id-ID')}</strong>
+          </div>
+        </div>
+
+        {/* Total Pengeluaran */}
+        <div className="bg-card border border-border rounded-lg p-3.5 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-md flex items-center justify-center bg-red-500/10 text-red-500">
+                <ArrowDownLeft size={16} />
+              </div>
+              <span className="text-xs font-semibold text-text-secondary">Pengeluaran</span>
             </div>
-            <div className="text-[0.85rem] text-text-secondary font-medium">Arus Kas Bersih (Net Cashflow)</div>
-            <div className={`text-[0.75rem] mt-1 font-bold ${netCashFlow >= 0 ? 'text-success' : 'text-danger'}`}>
-              {netCashFlow >= 0 ? '✓ Surplus Keuangan' : '⚠ Defisit Keuangan'}
+            <span className="text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full bg-danger-bg text-danger">
+              Outflow
+            </span>
+          </div>
+          <div className="text-lg font-extrabold text-danger tracking-tight leading-tight">
+            Rp {totalExpense.toLocaleString('id-ID')}
+          </div>
+          <div className="text-[0.65rem] text-muted leading-snug">
+            Lainnya: <strong className="text-text-secondary">Rp {totalOtherExpense.toLocaleString('id-ID')}</strong>
+          </div>
+        </div>
+
+        {/* Net Cashflow */}
+        <div className="bg-card border border-border rounded-lg p-3.5 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-blue-500/10 text-blue-500">
+              <DollarSign size={16} />
             </div>
+            <span className="text-xs font-semibold text-text-secondary">Sisa Uang</span>
+          </div>
+          <div className="text-lg font-extrabold text-text tracking-tight leading-tight">
+            Rp {netCashFlow.toLocaleString('id-ID')}
+          </div>
+          <div className={`text-[0.65rem] font-bold leading-snug ${netCashFlow >= 0 ? 'text-success' : 'text-danger'}`}>
+            {netCashFlow >= 0 ? '✓ Surplus' : '⚠ Defisit'}
           </div>
         </div>
       </div>
@@ -308,6 +415,48 @@ export default function IncomeExpenseView() {
               {tab.label}
             </button>
           ))}
+        </div>
+
+        {/* Date Range Filter */}
+        <div className="flex flex-wrap items-center gap-3 bg-main/50 px-4 py-2.5 rounded-lg border border-border">
+          <div className="flex items-center gap-2 text-sm font-semibold text-text-secondary shrink-0">
+            <Calendar size={16} className="text-primary" />
+            <span>Filter Tanggal</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              className="bg-card border border-border rounded-lg text-xs text-text px-2.5 py-1.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all w-36"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              title="Dari tanggal"
+            />
+            <span className="text-muted text-xs font-medium">s/d</span>
+            <input
+              type="date"
+              className="bg-card border border-border rounded-lg text-xs text-text px-2.5 py-1.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all w-36"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              title="Sampai tanggal"
+            />
+          </div>
+
+          {(startDate || endDate) && (
+            <button
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-danger bg-danger-bg border border-danger/20 hover:bg-danger hover:text-white transition-colors shrink-0"
+              onClick={() => { setStartDate(''); setEndDate(''); }}
+            >
+              <X size={12} />
+              Reset
+            </button>
+          )}
+
+          {(startDate || endDate) && (
+            <span className="text-[0.7rem] text-muted font-medium ml-auto">
+              {filteredTransactions.length} transaksi ditemukan
+            </span>
+          )}
         </div>
 
         {/* Table */}

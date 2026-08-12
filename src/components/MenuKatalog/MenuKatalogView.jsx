@@ -21,48 +21,54 @@ export default function MenuKatalogView() {
 
   const [menuList, setMenuList] = useState([]);
 
+  const fetchKatalog = async () => {
+    try {
+      const res = await api.get('/katalog');
+      let data = [];
+      if (res && Array.isArray(res.data)) data = res.data;
+      else if (res && res.data && Array.isArray(res.data.data)) data = res.data.data;
+      else if (Array.isArray(res)) data = res;
+
+      if (Array.isArray(data)) {
+        const mapped = data.map(item => {
+          const stockNum = item.stok || 0;
+          const autoStatus = stockNum === 0 ? 'Habis' : stockNum <= 10 ? 'Stok Menipis' : 'Tersedia';
+          return {
+            id: item.id,
+            name: item.nama_item,
+            category: item.kategori,
+            harga_jual: `Rp ${item.harga_jual.toLocaleString('id-ID')}`,
+            price: `Rp ${item.harga_modal.toLocaleString('id-ID')}`,
+            rawHargaJual: item.harga_jual,
+            rawHargaBeli: item.harga_modal,
+            stock: stockNum,
+            status: autoStatus,
+            image: item.url_gambar || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80',
+            desc: item.desc || item.deskripsi || 'Varian spesial Angkringan.'
+          };
+        });
+        setMenuList(mapped);
+      }
+    } catch (err) {
+      console.error('Failed to fetch katalog:', err);
+    }
+  };
+
   useEffect(() => {
-    api.get('/katalog')
-      .then(res => {
-        let data = [];
-        if (res && Array.isArray(res.data)) data = res.data;
-        else if (res && res.data && Array.isArray(res.data.data)) data = res.data.data;
-        else if (Array.isArray(res)) data = res;
-        
-        if (Array.isArray(data)) {
-          const mapped = data.map(item => {
-            const stockNum = item.stok || 0;
-            const autoStatus = stockNum === 0 ? 'Habis' : stockNum <= 10 ? 'Stok Menipis' : 'Tersedia';
-            return {
-              id: item.id,
-              name: item.nama_item,
-              category: item.kategori,
-              harga_jual: `Rp ${item.harga_jual.toLocaleString('id-ID')}`,
-              price: `Rp ${item.harga_modal.toLocaleString('id-ID')}`,
-              rawHargaJual: item.harga_jual,
-              rawHargaBeli: item.harga_modal,
-              stock: stockNum,
-              status: autoStatus,
-              image: item.url_gambar || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80',
-              desc: item.desc || item.deskripsi || 'Varian spesial Angkringan.'
-            };
-          });
-          setMenuList(mapped);
-        }
-      })
-      .catch(err => {
-        console.error('Failed to fetch katalog:', err);
-      });
+    fetchKatalog();
   }, []);
 
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  
+  // Alert State
+  const [successAlert, setSuccessAlert] = useState({ show: false, message: '' });
 
   // Form State
   const [formData, setFormData] = useState({
     name: '',
-    category: 'sate',
+    category: 'bakaran',
     harga_jual: '4000',
     price: '2000',
     stock: 20,
@@ -87,7 +93,7 @@ export default function MenuKatalogView() {
     setEditingItem(null);
     setFormData({
       name: '',
-      category: 'sate',
+      category: 'bakaran',
       harga_jual: '4000',
       price: '2000',
       stock: 30,
@@ -113,23 +119,48 @@ export default function MenuKatalogView() {
     setIsModalOpen(true);
   };
 
-  const handleDeleteItem = (id) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus menu ini dari katalog?')) {
-      setMenuList(prev => prev.filter(item => item.id !== id));
+  const handleDeleteItem = async (id, namaItem) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus katalog "${namaItem}"?`)) {
+      try {
+        await api.delete(`/katalog/${id}`);
+        setSuccessAlert({ show: true, message: 'Berhasil menghapus katalog!' });
+        await fetchKatalog();
+        setTimeout(() => {
+          setSuccessAlert({ show: false, message: '' });
+        }, 3000);
+      } catch (error) {
+        console.error('Failed to delete katalog:', error);
+        alert(error?.response?.data?.message || 'Gagal menghapus katalog');
+      }
     }
   };
 
-  const handleSaveSuccess = (savedItem, isEdit) => {
-    if (isEdit) {
-      setMenuList(prev => prev.map(item => item.id === savedItem.id ? savedItem : item));
-    } else {
-      setMenuList(prev => [savedItem, ...prev]);
-    }
+  const handleSaveSuccess = async (isEdit) => {
     setIsModalOpen(false);
+    
+    if (isEdit) {
+      setSuccessAlert({ show: true, message: 'Berhasil memperbarui menu!' });
+    } else {
+      setSuccessAlert({ show: true, message: 'Berhasil menambahkan menu baru!' });
+    }
+    
+    await fetchKatalog();
+
+    setTimeout(() => {
+      setSuccessAlert({ show: false, message: '' });
+    }, 3000);
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 relative">
+      {/* Success Alert */}
+      {successAlert.show && (
+        <div className="absolute top-0 right-0 z-50 animate-in fade-in slide-in-from-top-4 flex items-center gap-2 bg-green-100 text-green-700 font-bold px-4 py-3 rounded-lg shadow-md border border-green-200">
+          <CheckCircle2 size={20} />
+          <span>{successAlert.message}</span>
+        </div>
+      )}
+
       {/* Top Banner Stats Bar */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-card border border-border p-4 rounded-xl shadow-sm flex items-center gap-4">
@@ -185,7 +216,7 @@ export default function MenuKatalogView() {
                 onChange={(e) => setKatalogQuery(e.target.value)}
               />
             </div>
-            <button 
+            <button
               className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm"
               onClick={handleOpenAddModal}
             >
@@ -200,11 +231,10 @@ export default function MenuKatalogView() {
           {['semua', 'bakaran', 'jajanan', 'minuman', 'makanan'].map(cat => (
             <button
               key={cat}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all capitalize border ${
-                selectedCategory === cat 
-                  ? 'bg-primary text-white border-primary shadow-md' 
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all capitalize border ${selectedCategory === cat
+                  ? 'bg-primary text-white border-primary shadow-md'
                   : 'bg-main text-text-secondary border-border hover:bg-border/50'
-              }`}
+                }`}
               onClick={() => setSelectedCategory(cat)}
             >
               {cat === 'bakaran' ? 'bakaran' : cat === 'jajanan' ? 'jajanan' : cat === 'minuman' ? 'minuman' : cat === 'makanan' ? 'makanan' : 'Semua Kategori'}
@@ -217,7 +247,7 @@ export default function MenuKatalogView() {
           {filteredMenu.map(item => {
             const isLowStock = item.stock <= 10 && item.stock > 0;
             const isOutOfStock = item.stock === 0;
-            
+
             const badgeBg = isOutOfStock ? 'bg-danger/90' : isLowStock ? 'bg-amber-500/90' : 'bg-emerald-500/90';
 
             return (
@@ -286,9 +316,9 @@ export default function MenuKatalogView() {
                       </span>
                     </div>
                     <div className="w-full h-1.5 bg-border/50 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className={`h-full rounded-full transition-all duration-300 ${isOutOfStock ? 'bg-danger' : isLowStock ? 'bg-warning' : 'bg-success'}`}
-                        style={{ width: `${Math.min(100, (item.stock / 50) * 100)}%` }} 
+                        style={{ width: `${Math.min(100, (item.stock / 50) * 100)}%` }}
                       />
                     </div>
                   </div>
@@ -303,7 +333,7 @@ export default function MenuKatalogView() {
                     </button>
                     <button
                       className="flex justify-center flex-none items-center p-1.5 bg-card hover:bg-danger-bg border border-border hover:border-danger-bg rounded text-danger transition-colors cursor-pointer"
-                      onClick={() => handleDeleteItem(item.id)}
+                      onClick={() => handleDeleteItem(item.id, item.name)}
                       title="Hapus Menu"
                     >
                       <Trash2 size={13} />

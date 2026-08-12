@@ -232,14 +232,26 @@ export default function PosView({ onAddOrder }) {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5">
           {filteredProducts.map(product => {
             const inCart = cart.find(item => item.id === product.id);
+            const isOutOfStock = product.stock <= 0;
             return (
               <div
                 key={product.id}
-                className={`bg-card rounded-xl p-3.5 flex flex-col cursor-pointer transition-all relative overflow-hidden group shadow-sm hover:shadow-md ${inCart ? 'border-2 border-primary' : 'border border-border'
-                  }`}
-                onClick={() => handleAddToCart(product)}
+                className={`bg-card rounded-xl p-3.5 flex flex-col transition-all relative overflow-hidden group shadow-sm
+                  ${isOutOfStock ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer hover:shadow-md'}
+                  ${inCart && !isOutOfStock ? 'border-2 border-primary' : 'border border-border'}
+                `}
+                onClick={() => !isOutOfStock && handleAddToCart(product)}
               >
-                {inCart && (
+                {/* Stok Habis Overlay */}
+                {isOutOfStock && (
+                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 rounded-xl">
+                    <span className="bg-red-600 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase tracking-wider shadow-lg">
+                      Stok Habis
+                    </span>
+                  </div>
+                )}
+
+                {inCart && !isOutOfStock && (
                   <span className="absolute top-2.5 right-2.5 bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-extrabold z-10 shadow-sm">
                     {inCart.qty}
                   </span>
@@ -250,7 +262,7 @@ export default function PosView({ onAddOrder }) {
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      className={`w-full h-full object-cover transition-transform duration-300 ${!isOutOfStock ? 'group-hover:scale-110' : ''}`}
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80';
@@ -267,13 +279,23 @@ export default function PosView({ onAddOrder }) {
                     Rp {product.price.toLocaleString('id-ID')}
                   </span>
                   <button
-                    className="w-full bg-primary hover:bg-primary-10 hover:text-white text-white border border-primary/20 py-1.5 px-3 rounded-lg text-xs font-semibold flex flex-none items-center justify-center gap-1.5 transition-colors"
+                    className={`w-full py-1.5 px-3 rounded-lg text-xs font-semibold flex flex-none items-center justify-center gap-1.5 transition-colors
+                      ${isOutOfStock
+                        ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 cursor-not-allowed'
+                        : 'bg-primary hover:bg-primary-10 hover:text-white text-white border border-primary/20'
+                      }
+                    `}
+                    disabled={isOutOfStock}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleAddToCart(product);
+                      if (!isOutOfStock) handleAddToCart(product);
                     }}
                   >
-                    <Plus size={14} /> Tambah
+                    {isOutOfStock ? (
+                      <>Habis</>
+                    ) : (
+                      <><Plus size={14} /> Tambah</>
+                    )}
                   </button>
                 </div>
               </div>

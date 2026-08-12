@@ -12,8 +12,9 @@ export default function AddEditMenuModal({
   presetImages
 }) {
   if (!isOpen) return null;
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const handleSaveMenu = (e) => {
+  const handleSaveMenu = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
       alert('Mohon isi nama menu!');
@@ -25,67 +26,29 @@ export default function AddEditMenuModal({
     const stockNum = parseInt(formData.stock) || 0;
     const autoStatus = stockNum === 0 ? 'Habis' : stockNum <= 10 ? 'Stok Menipis' : 'Tersedia';
 
-    if (editingItem) {
-      const updatedItem = {
-        ...editingItem,
-        name: formData.name,
-        category: formData.category,
-        harga_jual: `Rp ${jualNum.toLocaleString('id-ID')}`,
-        price: `Rp ${beliNum.toLocaleString('id-ID')}`,
-        rawHargaJual: jualNum,
-        rawHargaBeli: beliNum,
-        stock: stockNum,
-        status: autoStatus,
-        image: formData.image,
-        desc: formData.desc
-      };
-      onSaveSuccess(updatedItem, true);
-    } else {
-      const payload = {
-        nama_item: formData.name,
-        kategori: formData.category,
-        stok: stockNum,
-        harga_modal: beliNum,
-        harga_jual: jualNum,
-        url_gambar: formData.image || presetImages[0].url
-      };
+    const payload = {
+      nama_item: formData.name,
+      kategori: formData.category,
+      stok: stockNum,
+      harga_modal: beliNum,
+      harga_jual: jualNum,
+      url_gambar: formData.image || presetImages[0].url
+    };
 
-      api.post('/katalog', payload)
-        .then(res => res.data || res)
-        .then(savedItem => {
-          const mappedItem = {
-            id: savedItem.id || Date.now(), // Fallback if backend doesn't return ID immediately
-            name: savedItem.nama_item,
-            category: savedItem.kategori,
-            harga_jual: `Rp ${savedItem.harga_jual.toLocaleString('id-ID')}`,
-            price: `Rp ${savedItem.harga_modal.toLocaleString('id-ID')}`,
-            rawHargaJual: savedItem.harga_jual,
-            rawHargaBeli: savedItem.harga_modal,
-            stock: savedItem.stok,
-            status: savedItem.stok === 0 ? 'Habis' : savedItem.stok <= 10 ? 'Stok Menipis' : 'Tersedia',
-            image: savedItem.url_gambar || presetImages[0].url,
-            desc: formData.desc || 'Varian spesial Angkringan.'
-          };
-          onSaveSuccess(mappedItem, false);
-        })
-        .catch(err => {
-          console.error('Failed to create katalog item on server:', err);
-          // Fallback logic
-          const newItem = {
-            id: Date.now(),
-            name: formData.name,
-            category: formData.category,
-            harga_jual: `Rp ${jualNum.toLocaleString('id-ID')}`,
-            price: `Rp ${beliNum.toLocaleString('id-ID')}`,
-            rawHargaJual: jualNum,
-            rawHargaBeli: beliNum,
-            stock: stockNum,
-            status: autoStatus,
-            image: formData.image || presetImages[0].url,
-            desc: formData.desc || 'Varian spesial Angkringan.'
-          };
-          onSaveSuccess(newItem, false);
-        });
+    setIsSubmitting(true);
+    try {
+      if (editingItem) {
+        await api.patch(`/katalog/${editingItem.id}`, payload);
+        onSaveSuccess(true);
+      } else {
+        await api.post('/katalog', payload);
+        onSaveSuccess(false);
+      }
+    } catch (error) {
+      console.error('Failed to save katalog item on server:', error);
+      alert(error?.response?.data?.message || 'Terjadi kesalahan saat menyimpan data');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -202,16 +165,25 @@ export default function AddEditMenuModal({
           <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-border">
             <button
               type="button"
-              className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-main text-text border border-border hover:bg-border/50 transition-colors"
+              className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-main text-text border border-border hover:bg-border/50 transition-colors disabled:opacity-50"
               onClick={onClose}
+              disabled={isSubmitting}
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-lg text-sm font-bold bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg hover:-translate-y-px transition-all"
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold bg-primary hover:bg-primary-hover text-white shadow-md hover:shadow-lg hover:-translate-y-px transition-all disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             >
-              {editingItem ? 'Simpan Perubahan' : 'Tambah Menu Ke Katalog'}
+              {isSubmitting ? (
+                <>
+                  <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                  Menyimpan...
+                </>
+              ) : (
+                editingItem ? 'Simpan Perubahan' : 'Tambah Menu Ke Katalog'
+              )}
             </button>
           </div>
         </form>

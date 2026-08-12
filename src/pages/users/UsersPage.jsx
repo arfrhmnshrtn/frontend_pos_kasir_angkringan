@@ -149,12 +149,18 @@ export const UsersPage = () => {
 
     setSubmitting(true);
     try {
-      const res = await userService.createUser(formData);
-      toast.success(res?.message || 'User/Kasir berhasil ditambahkan');
+      const payload = {
+        fullname: formData.name,
+        pin: formData.pin,
+        role: 'KASIR'
+      };
+      const res = await userService.createUser(payload);
+      toast.success(res?.message || 'Kasir berhasil ditambahkan');
       setIsCreateModalOpen(false);
+      setFormData({ name: '', pin: '', roleId: '', username: '', status: 'ACTIVE' });
       fetchUsers();
     } catch (err) {
-      toast.error(err?.message || 'Gagal menambahkan User');
+      toast.error(err?.response?.data?.message || err?.message || 'Gagal menambahkan Kasir');
     } finally {
       setSubmitting(false);
     }
@@ -215,10 +221,12 @@ export const UsersPage = () => {
     try {
       const userId = selectedUser.id || selectedUser._id;
       const res = await userService.resetUserPin(userId, resetPinValue);
-      toast.success(res?.message || 'PIN berhasil di-reset');
+      toast.success(res?.message || 'PIN kasir berhasil direset');
       setIsResetPinModalOpen(false);
+      setResetPinValue('');
+      fetchUsers();
     } catch (err) {
-      toast.error(err?.message || 'Gagal mereset PIN');
+      toast.error(err?.response?.data?.message || err?.message || 'Gagal mereset PIN');
     } finally {
       setSubmitting(false);
     }
@@ -257,11 +265,11 @@ export const UsersPage = () => {
     try {
       const userId = selectedUser.id || selectedUser._id;
       const res = await userService.deleteUser(userId);
-      toast.success(res?.message || 'User berhasil dihapus');
+      toast.success(res?.message || 'Kasir berhasil dihapus');
       setIsDeleteConfirmOpen(false);
       fetchUsers();
     } catch (err) {
-      toast.error(err?.message || 'Gagal menghapus user');
+      toast.error(err?.response?.data?.message || err?.message || 'Gagal menghapus kasir');
     } finally {
       setSubmitting(false);
     }
@@ -307,7 +315,7 @@ export const UsersPage = () => {
         />
       ) : (
         <div className="space-y-4">
-          <Table headers={['No', 'Nama Kasir', 'Role', 'Status', 'Tanggal Buat', 'Aksi']}>
+          <Table headers={['No', 'Nama', 'Role', 'Status', 'Aksi']}>
             {users.map((item, index) => {
               const roleText = typeof item.role === 'string' ? item.role : item.role?.name || 'Kasir';
               const isActive = item.status === 'ACTIVE' || item.status === 'aktif' || item.status === true;
@@ -330,32 +338,14 @@ export const UsersPage = () => {
                       {isActive ? 'Aktif' : 'Nonaktif'}
                     </Badge>
                   </td>
-                  <td className="px-6 py-4 text-xs text-text-secondary">
-                    {item.createdAt ? new Date(item.createdAt).toLocaleDateString('id-ID') : '-'}
-                  </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleOpenEdit(item)}
-                        title="Edit User"
-                        className="p-1.5 rounded-lg text-text-secondary hover:text-primary transition-colors cursor-pointer"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
                       <button
                         onClick={() => handleOpenResetPin(item)}
                         title="Reset PIN"
                         className="p-1.5 rounded-lg text-text-secondary hover:text-amber-500 transition-colors cursor-pointer"
                       >
                         <Key className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleOpenStatusConfirm(item)}
-                        title={isActive ? 'Nonaktifkan Kasir' : 'Aktifkan Kasir'}
-                        className={`p-1.5 rounded-lg transition-colors cursor-pointer text-text-secondary ${isActive ? 'hover:text-rose-500' : 'hover:text-emerald-500'
-                          }`}
-                      >
-                        {isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                       </button>
                       <button
                         onClick={() => handleOpenDeleteConfirm(item)}
@@ -382,31 +372,15 @@ export const UsersPage = () => {
       )}
 
       {/* Modal Create User */}
-      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Tambah Kasir / User Baru">
+      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Tambah Kasir Baru">
         <form onSubmit={handleCreateSubmit} className="space-y-4">
           <Input
-            label="Nama Lengkap"
+            label="Nama Lengkap Kasir"
             placeholder="Masukkan nama kasir"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             error={formErrors.name}
           />
-
-          <Input
-            label="Username / Kode (Opsional)"
-            placeholder="misal: kasir1"
-            value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-          />
-
-          {roles.length > 0 && (
-            <Select
-              label="Role Access"
-              value={formData.roleId}
-              onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
-              options={roles.map((r) => ({ value: r.id || r._id, label: r.name }))}
-            />
-          )}
 
           <div className="pt-2">
             <PinInput
