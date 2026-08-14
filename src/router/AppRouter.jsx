@@ -12,6 +12,7 @@ import { PosPage } from '../pages/pos/PosPage';
 import { Unauthorized401 } from '../pages/errors/Unauthorized401';
 import { Forbidden403 } from '../pages/errors/Forbidden403';
 import { NotFound404 } from '../pages/errors/NotFound404';
+import SalesAnalysis from '../pages/analysis/SalesAnalysis';
 
 export const AppRouter = () => {
   return (
@@ -57,6 +58,15 @@ export const AppRouter = () => {
           element={
             <RoleRoute allowedRoles={['OWNER', 'ADMIN']} requiredPermission={['cashier.read', 'user.read', 'users.read']}>
               <UsersPage />
+            </RoleRoute>
+          }
+        />
+
+        <Route
+          path="/analysis/sales"
+          element={
+            <RoleRoute allowedRoles={['OWNER', 'ADMIN']} requiredPermission={['sales_analysis.read']}>
+              <SalesAnalysis />
             </RoleRoute>
           }
         />

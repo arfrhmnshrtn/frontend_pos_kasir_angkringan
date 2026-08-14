@@ -1,19 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import Sidebar from './components/Layout/Sidebar';
 import Header from './components/Layout/Header';
 import StatCard from './components/Dashboard/StatCard';
-import SalesChart from './components/Dashboard/SalesChart';
-import OrdersTable from './components/Orders/OrdersTable';
-import MenuKatalogView from './components/MenuKatalog/MenuKatalogView';
-import WasteManagementView from './components/Kebocoran/WasteManagementView';
-import IncomeExpenseView from './components/Transaksi/IncomeExpenseView';
-import DebtManagementView from './components/Hutang/DebtManagementView';
-import PosView from './components/Pos/PosView';
-import CashReportView from './components/Keuangan/CashReportView';
-import AddOrderModal from './components/Orders/AddOrderModal';
-import LoginView from './components/Auth/LoginView';
-import { UsersPage } from './pages/users/UsersPage';
 import { useAuth } from './hooks/useAuth';
+
 import {
   DollarSign,
   ShoppingBag,
@@ -31,6 +21,19 @@ import {
   Calculator
 } from 'lucide-react';
 import './index.css';
+
+// Lazy loading heavy components
+const SalesAnalysis = lazy(() => import('./pages/analysis/SalesAnalysis'));
+const OrdersTable = lazy(() => import('./components/Orders/OrdersTable'));
+const MenuKatalogView = lazy(() => import('./components/MenuKatalog/MenuKatalogView'));
+const WasteManagementView = lazy(() => import('./components/Kebocoran/WasteManagementView'));
+const IncomeExpenseView = lazy(() => import('./components/Transaksi/IncomeExpenseView'));
+const DebtManagementView = lazy(() => import('./components/Hutang/DebtManagementView'));
+const PosView = lazy(() => import('./components/Pos/PosView'));
+const CashReportView = lazy(() => import('./components/Keuangan/CashReportView'));
+const AddOrderModal = lazy(() => import('./components/Orders/AddOrderModal'));
+const LoginView = lazy(() => import('./components/Auth/LoginView'));
+const UsersPage = lazy(() => import('./pages/users/UsersPage').then(module => ({ default: module.UsersPage })));
 
 export default function App() {
   const { isAuthenticated, user, role, loading } = useAuth();
@@ -116,17 +119,18 @@ export default function App() {
 
   if (!isAuthenticated) {
     return (
-      <LoginView
-        onLoginSuccess={(role) => {
-          // Temporarily just reload page to sync context if LoginView manual fetches it
-          window.location.reload();
-        }}
-      />
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-main text-text">Memuat...</div>}>
+        <LoginView
+          onLoginSuccess={(role) => {
+            window.location.reload();
+          }}
+        />
+      </Suspense>
     );
   }
 
   return (
-    <div className="flex w-full min-h-screen bg-main text-text">
+    <div className="flex w-full h-screen overflow-hidden bg-main text-text relative">
       {/* Left Sidebar */}
       <Sidebar
         collapsed={collapsed}
@@ -138,7 +142,7 @@ export default function App() {
       />
 
       {/* Main Content Outer Wrapper */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto overflow-x-hidden custom-scrollbar">
         {/* Top Header Bar */}
         <Header
           darkTheme={darkTheme}
@@ -192,7 +196,13 @@ export default function App() {
           </div>
 
           {/* Conditional View Rendering based on active tab */}
-          {activeTab === 'dashboard' && (
+          <Suspense fallback={
+            <div className="flex-1 flex flex-col items-center justify-center p-12">
+               <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+               <p className="text-text-secondary font-medium">Memuat modul...</p>
+            </div>
+          }>
+            {activeTab === 'dashboard' && (
             <>
               {/* Stat Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -234,8 +244,8 @@ export default function App() {
                 />
               </div>
 
-              {/* Sales Chart & Top Items */}
-              <SalesChart />
+              {/* Dashboard Summary/Analytic (optional, keeping it here if needed) */}
+              <SalesAnalysis />
 
               {/* Orders Data Table */}
               <OrdersTable
@@ -322,7 +332,7 @@ export default function App() {
           )}
 
           {activeTab === 'analitik' && (
-            <SalesChart />
+            <SalesAnalysis />
           )}
 
           {activeTab === 'keuangan' && (
@@ -360,15 +370,18 @@ export default function App() {
               </div>
             </div>
           )}
+          </Suspense>
         </main>
       </div>
 
       {/* Add New Order Modal */}
-      <AddOrderModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAddOrder={handleAddOrder}
-      />
+      <Suspense fallback={null}>
+        <AddOrderModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onAddOrder={handleAddOrder}
+        />
+      </Suspense>
     </div>
   );
 }

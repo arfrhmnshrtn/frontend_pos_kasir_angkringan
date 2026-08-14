@@ -78,7 +78,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
 
   return (
     <>
-      <aside className={`fixed lg:sticky top-0 h-screen bg-sidebar border-r border-border-sidebar flex flex-col transition-all duration-300 z-100 ${collapsed ? 'w-20' : 'w-72'
+      <aside className={`fixed lg:relative shrink-0 top-0 h-screen bg-sidebar border-r border-border-sidebar flex flex-col transition-all duration-300 z-50 ${collapsed ? 'w-20' : 'w-72'
         } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="p-5 flex items-center justify-between border-b border-border-sidebar">
           <a href="#dashboard" className="flex items-center gap-3 no-underline overflow-hidden" onClick={() => setActiveTab('dashboard')}>
