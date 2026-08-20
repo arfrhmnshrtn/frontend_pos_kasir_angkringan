@@ -38,7 +38,7 @@ export default function SalesAnalysis() {
 
   useEffect(() => {
     // Set document title
-    document.title = "Analisis Penjualan | POS Angkringan";
+    document.title = "Analisis Penjualan | Penjualan Angkringan";
   }, []);
 
   useEffect(() => {
@@ -52,13 +52,13 @@ export default function SalesAnalysis() {
         setError('Tanggal mulai tidak boleh lebih besar dari tanggal akhir.');
         return;
       }
-      fetchAnalysis({ startDate: customStartDate, endDate: customEndDate });
+      fetchAnalysis({ period: 'custom', startDate: customStartDate, endDate: customEndDate });
     }
   };
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-[1600px] mx-auto animate-in fade-in duration-300">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
 
           {!loading && analysisData?.period && (

@@ -205,7 +205,7 @@ export default function App() {
             {activeTab === 'dashboard' && (
             <>
               {/* Stat Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 <StatCard
                   title="Total Omset Hari Ini"
                   value="Rp 1.850.000"
@@ -242,7 +242,7 @@ export default function App() {
                   colorClass="purple"
                   subtitle="Avg Spend: Rp 51.300"
                 />
-              </div>
+              </div> */}
 
               {/* Dashboard Summary/Analytic (optional, keeping it here if needed) */}
               <SalesAnalysis />
