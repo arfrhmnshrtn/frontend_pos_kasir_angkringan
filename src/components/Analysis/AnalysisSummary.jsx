@@ -1,10 +1,11 @@
 import React from 'react';
-import { 
-  Wallet, 
-  Receipt, 
-  TrendingUp, 
-  Package, 
-  CreditCard 
+import {
+  Wallet,
+  Receipt,
+  TrendingUp,
+  TrendingDown,
+  Package,
+  CreditCard
 } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 

@@ -13,6 +13,8 @@ import { Unauthorized401 } from '../pages/errors/Unauthorized401';
 import { Forbidden403 } from '../pages/errors/Forbidden403';
 import { NotFound404 } from '../pages/errors/NotFound404';
 import SalesAnalysis from '../pages/analysis/SalesAnalysis';
+import TopProductsPage from '../pages/analysis/TopProductsPage';
+import BadProductPage from '../pages/analysis/BadProductPage';
 
 export const AppRouter = () => {
   return (
@@ -67,6 +69,24 @@ export const AppRouter = () => {
           element={
             <RoleRoute allowedRoles={['OWNER', 'ADMIN']} requiredPermission={['sales_analysis.read']}>
               <SalesAnalysis />
+            </RoleRoute>
+          }
+        />
+
+        <Route
+          path="/analysis/top-products"
+          element={
+            <RoleRoute allowedRoles={['OWNER', 'ADMIN']} requiredPermission={['sales_analysis.read']}>
+              <TopProductsPage />
+            </RoleRoute>
+          }
+        />
+
+        <Route
+          path="/analysis/bad-products"
+          element={
+            <RoleRoute allowedRoles={['OWNER', 'ADMIN']} requiredPermission={['sales_analysis.read']}>
+              <BadProductPage />
             </RoleRoute>
           }
         />

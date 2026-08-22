@@ -5,12 +5,28 @@ import AnalysisSummary from '../../components/Analysis/AnalysisSummary';
 import SalesChartDisplay from '../../components/Analysis/SalesChartDisplay';
 import FinancialSummary from '../../components/Analysis/FinancialSummary';
 import TopProductsTable from '../../components/Analysis/TopProductsTable';
+import BadProductTable from '../../components/Analysis/BadProductTable';
 import PaymentMethods from '../../components/Analysis/PaymentMethods';
 import DebtSummary from '../../components/Analysis/DebtSummary';
 import AnalysisSkeleton from '../../components/Analysis/AnalysisSkeleton';
 import { formatDate } from '../../utils/format';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import TopProductsPage from './TopProductsPage';
+import BadProductPage from './BadProductPage';
 
-export default function SalesAnalysis() {
+export default function SalesAnalysisWrapper() {
+  return (
+    <MemoryRouter>
+      <Routes>
+        <Route path="/" element={<SalesAnalysisContent />} />
+        <Route path="/analysis/top-products" element={<TopProductsPage />} />
+        <Route path="/analysis/bad-products" element={<BadProductPage />} />
+      </Routes>
+    </MemoryRouter>
+  );
+}
+
+function SalesAnalysisContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [analysisData, setAnalysisData] = useState(null);
@@ -102,13 +118,17 @@ export default function SalesAnalysis() {
 
           <SalesChartDisplay data={analysisData.sales_chart} />
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 align-top">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 align-top">
             <FinancialSummary summary={analysisData.summary} />
-            <TopProductsTable products={analysisData.top_products} />
+            <PaymentMethods methods={analysisData.payment_methods} />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <PaymentMethods methods={analysisData.payment_methods} />
+          <div className="flex flex-col gap-6">
+            <TopProductsTable products={analysisData.top_products} />
+            <BadProductTable products={analysisData.bad_products} />
+          </div>
+
+          <div>
             <DebtSummary summary={analysisData.debt_summary} />
           </div>
         </div>

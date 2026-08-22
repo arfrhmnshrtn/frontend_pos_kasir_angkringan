@@ -1,9 +1,9 @@
 import React from 'react';
-import { Package, ChevronRight, ArrowLeft } from 'lucide-react';
+import { TrendingDown, ChevronRight, ArrowLeft } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 import { useNavigate } from 'react-router-dom';
 
-export default function TopProductsTable({ products, isFullPage = false }) {
+export default function BadProductTable({ products, isFullPage = false }) {
   const navigate = useNavigate();
   const displayProducts = isFullPage ? products : products?.slice(0, 5);
 
@@ -16,8 +16,8 @@ export default function TopProductsTable({ products, isFullPage = false }) {
               <ArrowLeft size={20} />
             </button>
           )}
-          <Package size={20} className="text-primary" />
-          <span>Menu Terlaris</span>
+          <TrendingDown size={20} className="text-red-500" />
+          <span>Menu Kurang Laku</span>
         </div>
       </div>
 
@@ -42,26 +42,26 @@ export default function TopProductsTable({ products, isFullPage = false }) {
             <tbody>
               {displayProducts?.map((item, index) => (
                 <tr key={item.id} className="border-b border-border hover:bg-main/30 transition-colors">
-                  <td className="px-4 py-3 font-bold text-primary">{item.ranking || (index + 1)}</td>
+                  <td className="px-4 py-3 font-bold text-red-500">{item.ranking || (index + 1)}</td>
                   <td className="px-4 py-3 font-semibold text-text">{item.name}</td>
                   <td className="px-4 py-3 text-text-secondary capitalize">{item.category}</td>
                   <td className="px-4 py-3 text-right font-medium text-text">{item.quantity} item</td>
                   <td className="px-4 py-3 text-right font-medium text-text">{formatCurrency(item.revenue)}</td>
                   <td className="px-4 py-3 text-right text-text-secondary">{formatCurrency(item.cost)}</td>
-                  <td className="px-4 py-3 text-right font-bold text-emerald-500">{formatCurrency(item.profit)}</td>
+                  <td className="px-4 py-3 text-right font-bold text-red-500">{formatCurrency(item.profit)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          
+
           
           {!isFullPage && products?.length > 5 && (
             <div 
-              className="flex justify-center border-t border-border p-3 bg-main/5 hover:bg-main/20 transition-colors w-full cursor-pointer" 
-              onClick={() => navigate('/analysis/top-products', { state: { products } })}
+              className="flex justify-center border-t border-border p-3 bg-red-50/50 hover:bg-red-50 dark:bg-red-900/10 dark:hover:bg-red-900/20 transition-colors w-full cursor-pointer" 
+              onClick={() => navigate('/analysis/bad-products', { state: { products } })}
             >
               <button 
-                className="text-xs font-semibold text-primary flex items-center gap-1.5 focus:outline-hidden"
+                className="text-xs font-semibold text-red-500 flex items-center gap-1.5 focus:outline-hidden"
               >
                 Lihat Detail ({products.length} Menu) <ChevronRight size={14} />
               </button>
