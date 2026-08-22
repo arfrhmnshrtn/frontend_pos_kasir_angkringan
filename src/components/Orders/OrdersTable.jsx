@@ -25,7 +25,6 @@ import {
 export default function OrdersTable({ searchQuery }) {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [paymentFilter, setPaymentFilter] = useState('semua');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -106,7 +105,7 @@ export default function OrdersTable({ searchQuery }) {
       items.toLowerCase().includes((searchQuery || '').toLowerCase());
 
     const status = (order.status || '').toLowerCase();
-    const matchesPayment = paymentFilter === 'semua' || status === paymentFilter.toLowerCase();
+    const matchesPayment = status === 'belum_bayar'; // Hanya tampilkan yang belum dibayar
 
     return matchesSearch && matchesPayment;
   });
@@ -174,29 +173,11 @@ export default function OrdersTable({ searchQuery }) {
           </span>
         </div>
 
-        {/* Filter Tab Lunas vs Utang */}
+        {/* Status Tab (Hanya Belum Dibayar) */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mt-1 sm:mt-0">
-          {[
-            { id: 'semua', label: 'Semua Pesanan' },
-            { id: 'belum_bayar', label: 'Belum Dibayar' },
-            { id: 'lunas', label: 'Lunas' },
-            { id: 'hutang', label: 'Utang / Kasbon' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border ${paymentFilter === tab.id
-                ? 'bg-primary text-white border-primary shadow-sm'
-                : 'bg-main text-text-secondary border-border hover:bg-border/50'
-                }`}
-              onClick={() => {
-                setPaymentFilter(tab.id);
-                console.log(tab.id);
-                setCurrentPage(1);
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+          <span className="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border bg-primary text-white border-primary shadow-sm">
+            Belum Dibayar
+          </span>
         </div>
       </div>
 
