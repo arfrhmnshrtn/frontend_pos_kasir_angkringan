@@ -55,6 +55,16 @@ export default function App() {
     }
   }, [darkTheme]);
 
+  // Handle default tab based on role
+  useEffect(() => {
+    if (isAuthenticated) {
+      const currentRole = typeof role === 'string' ? role.toUpperCase() : role?.name?.toUpperCase() || 'KASIR';
+      if (currentRole !== 'OWNER' && activeTab === 'dashboard') {
+        setActiveTab('pos');
+      }
+    }
+  }, [isAuthenticated, role, activeTab]);
+
   // Initial Sample Orders
   const [orders, setOrders] = useState([
     {
@@ -173,7 +183,7 @@ export default function App() {
                 {activeTab === 'pengaturan' && 'Pengaturan Toko'}
               </h1>
               <p className="text-sm text-text-secondary">
-                Selamat datang kembali, Mas Pak Admin! Berikut ringkasan operasional Angkringan hari ini.
+                Selamat datang kembali, {user?.fullname || user?.name || 'Kasir'}! Berikut ringkasan operasional Angkringan hari ini.
               </p>
             </div>
           </div>

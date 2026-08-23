@@ -24,6 +24,7 @@ export default function IncomeExpenseView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('semua');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [viewPesanan, setViewPesanan] = useState(null);
 
   // Date range filter state
   const [startDate, setStartDate] = useState('');
@@ -70,7 +71,8 @@ export default function IncomeExpenseView() {
           amount: Number(t.nominal),
           paymentMethod: (t.metode_pembayaran || '').toUpperCase(),
           description: t.keterangan || '-',
-          loggedBy: t.user?.fullname || '-'
+          loggedBy: t.user?.fullname || '-',
+          rawPesanan: t.pesanan || null
         }));
         setTransactions(mappedData);
       }
@@ -158,8 +160,19 @@ export default function IncomeExpenseView() {
     }
   };
 
-  const handleDeleteTrx = (id) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
+  const handleDeleteTrx = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus data transaksi ini? Data yang terhapus tidak dapat dikembalikan.')) return;
+
+    try {
+      const res = await transaksiService.deleteTransaction(id);
+      if (res?.success) {
+        toast.success(res.message || 'Transaksi berhasil dihapus');
+        // Refresh API so stats are perfectly matched
+        fetchTransactions();
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err?.message || 'Gagal menghapus transaksi');
+    }
   };
 
   const handleAddCategory = async (e) => {
@@ -511,14 +524,25 @@ export default function IncomeExpenseView() {
                       {t.description}
                     </td>
                     <td className="px-4 py-3.5 text-xs text-text">{t.loggedBy}</td>
-                    <td className="px-4 py-3.5 text-right flex justify-end">
-                      <button
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-danger hover:text-white hover:bg-danger transition-colors cursor-pointer"
-                        title="Hapus Transaksi"
-                        onClick={() => handleDeleteTrx(t.rawId)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                    <td className="px-4 py-3.5 text-right flex justify-end gap-2">
+                      {t.rawPesanan && (
+                        <button
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-primary hover:text-white hover:bg-primary transition-colors cursor-pointer"
+                          title="Lihat Detail Pesanan"
+                          onClick={() => setViewPesanan(t.rawPesanan)}
+                        >
+                          <FileText size={16} />
+                        </button>
+                      )}
+                      {!t.rawPesanan && (
+                        <button
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-danger hover:text-white hover:bg-danger transition-colors cursor-pointer"
+                          title="Hapus Transaksi"
+                          onClick={() => handleDeleteTrx(t.rawId)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -697,6 +721,79 @@ export default function IncomeExpenseView() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Detail Pesanan */}
+      {viewPesanan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setViewPesanan(null)}>
+          <div className="bg-card w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 border border-border flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-main/50 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <FileText size={20} className="text-primary" />
+                <h3 className="font-bold text-lg text-text m-0">Detail Pesanan</h3>
+              </div>
+              <button className="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:text-text hover:bg-border/50 transition-colors" onClick={() => setViewPesanan(null)}>
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto">
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Nama Pelanggan</p>
+                <p className="font-bold text-text text-base">{viewPesanan.nama_pelanggan || '-'}</p>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Menu yang Dibeli</p>
+                <div className="bg-main border border-border rounded-lg overflow-hidden">
+                  <table className="w-full text-xs text-left text-text">
+                    <thead className="bg-main border-b border-border text-text-secondary">
+                      <tr>
+                        <th className="px-3 py-2 font-semibold">Menu</th>
+                        <th className="px-3 py-2 font-semibold text-center">Qty</th>
+                        <th className="px-3 py-2 font-semibold text-right">Modal</th>
+                        <th className="px-3 py-2 font-semibold text-right">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {viewPesanan.detail_pesanan?.map((d, i) => (
+                        <tr key={i} className="border-b border-border/50 last:border-0 hover:bg-card">
+                          <td className="px-3 py-2">{d.nama_menu || d.menu?.nama_item || 'Unknown Menu'}</td>
+                          <td className="px-3 py-2 text-center">{d.jumlah}</td>
+                          <td className="px-3 py-2 text-right">Rp {(d.menu?.harga_modal || 0).toLocaleString('id-ID')}</td>
+                          <td className="px-3 py-2 text-right font-semibold">Rp {(d.harga * d.jumlah).toLocaleString('id-ID')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {(() => {
+                let totalModal = 0;
+                let totalPendapatan = 0;
+                viewPesanan.detail_pesanan?.forEach(d => {
+                  totalModal += (d.menu?.harga_modal || 0) * d.jumlah;
+                  totalPendapatan += (d.harga || 0) * d.jumlah;
+                });
+                const keuntungan = totalPendapatan - totalModal;
+
+                return (
+                  <div className="bg-main border border-border rounded-lg p-4 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Total Modal</p>
+                      <p className="font-bold text-danger">Rp {totalModal.toLocaleString('id-ID')}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Total Keuntungan</p>
+                      <p className="font-bold text-success">Rp {keuntungan.toLocaleString('id-ID')}</p>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         </div>
       )}

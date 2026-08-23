@@ -19,4 +19,8 @@ export const transaksiService = {
     const res = await api.post(`/transaksi-keuangan/${type}`, data);
     return res;
   },
+  deleteTransaction: async (id) => {
+    const res = await api.delete(`/transaksi-keuangan/${id}`);
+    return res;
+  }
 };
