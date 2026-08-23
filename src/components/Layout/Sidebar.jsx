@@ -41,10 +41,10 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
       section: 'Laporan & Keuangan',
       items: [
         { id: 'transaksi', label: 'Pemasukan & Pengeluaran', icon: Receipt },
-        { id: 'hutang', label: 'Buku Hutang & Piutang', icon: BookOpen, badge: '3' },
+        { id: 'hutang', label: 'Buku Hutang & Piutang', icon: BookOpen, badge: '' },
         { id: 'analitik', label: 'Analisis Penjualan', icon: BarChart3 },
         { id: 'keuangan', label: 'Laporan Kas', icon: Wallet },
-        { id: 'kebocoran', label: 'Barang Terbuang / Waste', icon: Trash2, badge: '4' },
+        { id: 'kebocoran', label: 'Barang Terbuang / Waste', icon: Trash2, badge: '' },
       ]
     },
     {
@@ -60,7 +60,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
 
   const filteredMenuItems = menuItems.map(group => {
     let items = group.items;
-    
+
     // Filter out hutang if no permission
     if (!hasPermission('debt.read')) {
       items = items.filter(item => item.id !== 'hutang');
@@ -69,7 +69,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
     if (userRoleStr === 'OWNER') {
       return { ...group, items };
     }
-    
+
     return {
       ...group,
       items: items.filter(item => allowedKasirMenus.includes(item.id))

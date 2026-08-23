@@ -4,6 +4,7 @@ import { useCashReport } from '../../hooks/useCashReport';
 import { usePermission } from '../../hooks/usePermission';
 import { Select } from '../common/Select';
 import { Input } from '../common/Input';
+import { formatDate } from '../../utils/format';
 import { CashSummaryCards } from './CashSummaryCards';
 import { IncomeExpenseChart } from './IncomeExpenseChart';
 import { PaymentMethodChart } from './PaymentMethodChart';
@@ -50,15 +51,23 @@ export default function CashReportView() {
       
       {/* HEADER & FILTER PERIOD */}
       <div className="flex xl:items-center justify-between flex-col xl:flex-row gap-4 mb-2">
-        {/* <div className="flex-1">
-          <h2 className="text-2xl font-bold text-text tracking-tight flex items-center gap-2 mb-1">
-            <FileSpreadsheet className="text-blue-500 w-6 h-6" />
-            Laporan Kas & Keuangan
-          </h2>
-          <p className="text-sm text-text-secondary">
-            Pantau arus kas, pemasukan, pengeluaran, alokasi dana, dan keuntungan usaha.
-          </p>
-        </div> */}
+        <div>
+           {/* Indikator Periode Aktif */}
+           <div className="text-xs font-semibold bg-main border border-border inline-block px-3 py-1.5 rounded-lg shadow-sm">
+              Periode: <span className="text-primary">
+                {reportData?.period?.start_date && reportData?.period?.end_date 
+                  ? `${formatDate(reportData.period.start_date)} - ${formatDate(reportData.period.end_date)}`
+                  : filters.period === 'custom' && filters.startDate && filters.endDate 
+                    ? `${formatDate(filters.startDate)} - ${formatDate(filters.endDate)}` 
+                    : filters.period === 'today' ? 'Hari Ini' 
+                    : filters.period === '7days' ? '7 Hari Terakhir' 
+                    : filters.period === '30days' ? '30 Hari Terakhir' 
+                    : filters.period === 'month' ? 'Bulan Ini' 
+                    : filters.period === 'year' ? 'Tahun Ini' 
+                    : 'Bulan Ini'}
+              </span>
+           </div>
+        </div>
         
         <div className="flex">
           <Select 

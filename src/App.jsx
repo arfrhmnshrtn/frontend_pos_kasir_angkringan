@@ -176,200 +176,142 @@ export default function App() {
                 Selamat datang kembali, Mas Pak Admin! Berikut ringkasan operasional Angkringan hari ini.
               </p>
             </div>
-
-            {/* <div className="flex gap-2.5 items-center">
-              <div className="bg-card border border-border px-3 py-1.5 rounded-lg text-xs font-semibold text-text-secondary flex items-center gap-1.5 shadow-sm">
-                <Calendar size={14} />
-                <span>Kamis, 6 Ags 2026</span>
-              </div>
-
-              <button className="bg-card hover:bg-main border border-border text-text px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm" onClick={() => window.location.reload()}>
-                <RefreshCw size={16} />
-                <span>Refresh</span>
-              </button>
-
-              <button className="bg-card hover:bg-main border border-border text-text px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm">
-                <Download size={16} />
-                <span>Export Data</span>
-              </button>
-            </div> */}
           </div>
 
           {/* Conditional View Rendering based on active tab */}
           <Suspense fallback={
             <div className="flex-1 flex flex-col items-center justify-center p-12">
-               <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-               <p className="text-text-secondary font-medium">Memuat modul...</p>
+              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-text-secondary font-medium">Memuat modul...</p>
             </div>
           }>
             {activeTab === 'dashboard' && (
-            <>
-              {/* Stat Cards Grid */}
-              {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                <StatCard
-                  title="Total Omset Hari Ini"
-                  value="Rp 1.850.000"
-                  trend="+14.2%"
-                  isPositive={true}
-                  icon={DollarSign}
-                  colorClass="orange"
-                  subtitle="vs kemarin (Rp 1.620.000)"
-                />
-                <StatCard
-                  title="Total Pesanan"
-                  value="48 Order"
-                  trend="+8.5%"
-                  isPositive={true}
-                  icon={ShoppingBag}
-                  colorClass="blue"
-                  subtitle="12 pesanan diproses"
-                />
-                <StatCard
-                  title="Varian Menu Terjual"
-                  value="182 Porsi"
-                  trend="+18%"
-                  isPositive={true}
-                  icon={Utensils}
-                  colorClass="green"
-                  subtitle="Terbanyak: Sate Kulit"
-                />
-                <StatCard
-                  title="Pelanggan Hari Ini"
-                  value="36 Orang"
-                  trend="-2.1%"
-                  isPositive={false}
-                  icon={Users}
-                  colorClass="purple"
-                  subtitle="Avg Spend: Rp 51.300"
-                />
-              </div> */}
+              <>
+                <SalesAnalysis />
 
-              {/* Dashboard Summary/Analytic (optional, keeping it here if needed) */}
-              <SalesAnalysis />
+                {/* Orders Data Table */}
+                <OrdersTable
+                  orders={orders}
+                  setOrders={setOrders}
+                  searchQuery={searchQuery}
+                />
+              </>
+            )}
 
-              {/* Orders Data Table */}
+            {activeTab === 'pesanan' && (
               <OrdersTable
                 orders={orders}
                 setOrders={setOrders}
                 searchQuery={searchQuery}
               />
-            </>
-          )}
+            )}
 
-          {activeTab === 'pesanan' && (
-            <OrdersTable
-              orders={orders}
-              setOrders={setOrders}
-              searchQuery={searchQuery}
-            />
-          )}
+            {activeTab === 'katalog' && (
+              <MenuKatalogView />
+            )}
 
-          {activeTab === 'katalog' && (
-            <MenuKatalogView />
-          )}
+            {activeTab === 'users' && (
+              <UsersPage />
+            )}
 
-          {activeTab === 'users' && (
-            <UsersPage />
-          )}
-
-          {activeTab === 'pelanggan' && (
-            <div className="bg-card border border-border rounded-xl shadow-sm p-6 flex flex-col gap-4">
-              <div className="flex items-center justify-between pb-3 border-b border-border">
-                <div className="flex items-center gap-2 font-bold text-text text-[1.05rem]">
-                  <Users size={20} className="text-primary" />
-                  <span>Daftar Pelanggan Setia Angkringan</span>
+            {activeTab === 'pelanggan' && (
+              <div className="bg-card border border-border rounded-xl shadow-sm p-6 flex flex-col gap-4">
+                <div className="flex items-center justify-between pb-3 border-b border-border">
+                  <div className="flex items-center gap-2 font-bold text-text text-[1.05rem]">
+                    <Users size={20} className="text-primary" />
+                    <span>Daftar Pelanggan Setia Angkringan</span>
+                  </div>
+                </div>
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full text-left text-sm border-collapse">
+                    <thead>
+                      <tr>
+                        <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Nama Pelanggan</th>
+                        <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Total Kunjungan</th>
+                        <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Total Transaksi</th>
+                        <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Favorit Menu</th>
+                        <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Status Membership</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="px-4 py-3.5 border-b border-border font-semibold text-text">Rian Permana</td>
+                        <td className="px-4 py-3.5 border-b border-border text-text">14 Kali</td>
+                        <td className="px-4 py-3.5 border-b border-border font-bold text-text">Rp 280.000</td>
+                        <td className="px-4 py-3.5 border-b border-border text-text">Sate Kulit Bakar</td>
+                        <td className="px-4 py-3.5 border-b border-border"><span className="bg-success-bg text-success px-2.5 py-1 rounded-full text-[0.7rem] font-bold">VIP Member</span></td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3.5 border-b border-border font-semibold text-text">Siti Rahma</td>
+                        <td className="px-4 py-3.5 border-b border-border text-text">9 Kali</td>
+                        <td className="px-4 py-3.5 border-b border-border font-bold text-text">Rp 195.000</td>
+                        <td className="px-4 py-3.5 border-b border-border text-text">Wedang Jahe</td>
+                        <td className="px-4 py-3.5 border-b border-border"><span className="bg-warning-bg text-amber-700 px-2.5 py-1 rounded-full text-[0.7rem] font-bold">Reguler</span></td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-3.5 border-b border-border font-semibold text-text">Budi Santoso</td>
+                        <td className="px-4 py-3.5 border-b border-border text-text">22 Kali</td>
+                        <td className="px-4 py-3.5 border-b border-border font-bold text-text">Rp 450.000</td>
+                        <td className="px-4 py-3.5 border-b border-border text-text">Nasi Kucing Teri</td>
+                        <td className="px-4 py-3.5 border-b border-border"><span className="bg-success-bg text-success px-2.5 py-1 rounded-full text-[0.7rem] font-bold">VIP Member</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
-              <div className="w-full overflow-x-auto">
-                <table className="w-full text-left text-sm border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Nama Pelanggan</th>
-                      <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Total Kunjungan</th>
-                      <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Total Transaksi</th>
-                      <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Favorit Menu</th>
-                      <th className="px-4 py-3 bg-main text-text-secondary font-semibold text-xs uppercase tracking-wider border-b border-border">Status Membership</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="px-4 py-3.5 border-b border-border font-semibold text-text">Rian Permana</td>
-                      <td className="px-4 py-3.5 border-b border-border text-text">14 Kali</td>
-                      <td className="px-4 py-3.5 border-b border-border font-bold text-text">Rp 280.000</td>
-                      <td className="px-4 py-3.5 border-b border-border text-text">Sate Kulit Bakar</td>
-                      <td className="px-4 py-3.5 border-b border-border"><span className="bg-success-bg text-success px-2.5 py-1 rounded-full text-[0.7rem] font-bold">VIP Member</span></td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3.5 border-b border-border font-semibold text-text">Siti Rahma</td>
-                      <td className="px-4 py-3.5 border-b border-border text-text">9 Kali</td>
-                      <td className="px-4 py-3.5 border-b border-border font-bold text-text">Rp 195.000</td>
-                      <td className="px-4 py-3.5 border-b border-border text-text">Wedang Jahe</td>
-                      <td className="px-4 py-3.5 border-b border-border"><span className="bg-warning-bg text-amber-700 px-2.5 py-1 rounded-full text-[0.7rem] font-bold">Reguler</span></td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3.5 border-b border-border font-semibold text-text">Budi Santoso</td>
-                      <td className="px-4 py-3.5 border-b border-border text-text">22 Kali</td>
-                      <td className="px-4 py-3.5 border-b border-border font-bold text-text">Rp 450.000</td>
-                      <td className="px-4 py-3.5 border-b border-border text-text">Nasi Kucing Teri</td>
-                      <td className="px-4 py-3.5 border-b border-border"><span className="bg-success-bg text-success px-2.5 py-1 rounded-full text-[0.7rem] font-bold">VIP Member</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+            )}
 
-          {activeTab === 'pos' && (
-            <PosView onAddOrder={handleAddOrder} />
-          )}
+            {activeTab === 'pos' && (
+              <PosView onAddOrder={handleAddOrder} />
+            )}
 
-          {activeTab === 'transaksi' && (
-            <IncomeExpenseView />
-          )}
+            {activeTab === 'transaksi' && (
+              <IncomeExpenseView />
+            )}
 
-          {activeTab === 'hutang' && (
-            <DebtManagementView />
-          )}
+            {activeTab === 'hutang' && (
+              <DebtManagementView />
+            )}
 
-          {activeTab === 'analitik' && (
-            <SalesAnalysis />
-          )}
+            {activeTab === 'analitik' && (
+              <SalesAnalysis />
+            )}
 
-          {activeTab === 'keuangan' && (
-            <CashReportView />
-          )}
+            {activeTab === 'keuangan' && (
+              <CashReportView />
+            )}
 
-          {activeTab === 'kebocoran' && (
-            <WasteManagementView />
-          )}
+            {activeTab === 'kebocoran' && (
+              <WasteManagementView />
+            )}
 
-          {activeTab === 'pengaturan' && (
-            <div className="bg-card border border-border rounded-xl shadow-sm p-6 flex flex-col gap-4 max-w-full">
-              <div className="flex items-center justify-between pb-3 border-b border-border">
-                <div className="flex items-center gap-2 font-bold text-text text-[1.05rem]">
-                  <Settings size={20} className="text-primary" />
-                  <span>Pengaturan Angkringan</span>
+            {activeTab === 'pengaturan' && (
+              <div className="bg-card border border-border rounded-xl shadow-sm p-6 flex flex-col gap-4 max-w-full">
+                <div className="flex items-center justify-between pb-3 border-b border-border">
+                  <div className="flex items-center gap-2 font-bold text-text text-[1.05rem]">
+                    <Settings size={20} className="text-primary" />
+                    <span>Pengaturan Angkringan</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-text-secondary mb-1">Nama Outlet / Angkringan</label>
+                    <input type="text" className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" defaultValue="Angkringan Mas Pak" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-text-secondary mb-1">Jam Operasional</label>
+                    <input type="text" className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" defaultValue="17.00 - 01.00 WIB" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-text-secondary mb-1">Alamat Toko</label>
+                    <input type="text" className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" defaultValue="Jl. Malioboro No. 42, Yogyakarta" />
+                  </div>
+                  <button className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-md mt-2 self-start">
+                    Simpan Perubahan
+                  </button>
                 </div>
               </div>
-              <div className="flex flex-col gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-text-secondary mb-1">Nama Outlet / Angkringan</label>
-                  <input type="text" className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" defaultValue="Angkringan Mas Pak" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-text-secondary mb-1">Jam Operasional</label>
-                  <input type="text" className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" defaultValue="17.00 - 01.00 WIB" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-text-secondary mb-1">Alamat Toko</label>
-                  <input type="text" className="w-full bg-main border border-border rounded-lg text-sm text-text px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-light transition-all" defaultValue="Jl. Malioboro No. 42, Yogyakarta" />
-                </div>
-                <button className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-md mt-2 self-start">
-                  Simpan Perubahan
-                </button>
-              </div>
-            </div>
-          )}
+            )}
           </Suspense>
         </main>
       </div>
