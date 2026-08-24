@@ -17,7 +17,7 @@ import { EmptyState } from '../common/EmptyState';
 import { BudgetModal } from './BudgetModal';
 import { DeleteBudgetModal } from './DeleteBudgetModal';
 
-export const BudgetAllocation = ({ netCashFlow = 0 }) => {
+export const BudgetAllocation = ({ netProfit = 0 }) => {
   const toast = useToast();
 
   // Data state
@@ -88,13 +88,13 @@ export const BudgetAllocation = ({ netCashFlow = 0 }) => {
 
   // Compute monetary amounts from net cash flow
   const totalAllocatedAmount = useMemo(
-    () => Math.round(netCashFlow * (totalPercentage / 100)) + totalFixedAmount,
-    [netCashFlow, totalPercentage, totalFixedAmount]
+    () => Math.round(netProfit * (totalPercentage / 100)) + totalFixedAmount,
+    [netProfit, totalPercentage, totalFixedAmount]
   );
 
   const remainingAmount = useMemo(
-    () => netCashFlow - totalAllocatedAmount,
-    [netCashFlow, totalAllocatedAmount]
+    () => netProfit - totalAllocatedAmount,
+    [netProfit, totalAllocatedAmount]
   );
 
   // ─── CRUD handlers ───────────────────────────────────────────
@@ -212,10 +212,10 @@ export const BudgetAllocation = ({ netCashFlow = 0 }) => {
             </div>
             <div className="flex flex-col">
               <span className="text-xs text-text-secondary font-bold uppercase tracking-wider mb-0.5">
-                Net Cash Flow
+                Laba Bersih
               </span>
-              <span className={`text-2xl font-extrabold tracking-tight ${netCashFlow < 0 ? 'text-danger' : 'text-purple-500'}`}>
-                {formatCurrency(netCashFlow)}
+              <span className={`text-2xl font-extrabold tracking-tight ${netProfit < 0 ? 'text-danger' : 'text-purple-500'}`}>
+                {formatCurrency(netProfit)}
               </span>
               <span className="text-[0.65rem] text-muted mt-0.5">Dasar perhitungan alokasi</span>
             </div>
@@ -287,10 +287,10 @@ export const BudgetAllocation = ({ netCashFlow = 0 }) => {
               
               if (isFixed) {
                 amount = budget.fixed_amount || 0;
-                safePercentage = netCashFlow > 0 ? Math.min(100, (amount / netCashFlow) * 100) : 0;
+                safePercentage = netProfit > 0 ? Math.min(100, (amount / netProfit) * 100) : 0;
               } else {
                 safePercentage = Math.min(100, Math.max(0, budget.percentage));
-                amount = Math.round(netCashFlow * (budget.percentage / 100));
+                amount = Math.round(netProfit * (budget.percentage / 100));
               }
               return (
                 <div

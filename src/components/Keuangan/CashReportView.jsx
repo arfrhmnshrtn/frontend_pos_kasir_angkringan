@@ -163,7 +163,7 @@ export default function CashReportView() {
             loading={loading}
           />
 
-          <BudgetAllocation netCashFlow={reportData?.summary?.net_cash_flow || 0} />
+          <BudgetAllocation netProfit={reportData?.profit?.net_profit || 0} />
         </>
       )}
 

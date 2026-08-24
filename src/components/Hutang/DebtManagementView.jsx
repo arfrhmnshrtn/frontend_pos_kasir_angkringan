@@ -63,6 +63,8 @@ export default function DebtManagementView() {
   }, [canRead, fetchDebts]);
 
   const filteredDebts = debts.filter(rec => {
+    if (String(rec.status).toUpperCase() === 'LUNAS') return false;
+
     const customer = (rec.customer_name || '').toLowerCase();
     const supplier = (rec.supplier_name || '').toLowerCase();
     const order = (rec.pesanan?.nomor_pesanan || '').toLowerCase();
@@ -192,8 +194,7 @@ export default function DebtManagementView() {
             {[
               { id: 'semua', label: 'Semua Status' },
               { id: 'belum_lunas', label: 'Belum Dibayar' },
-              { id: 'sebagian', label: 'Sebagian' },
-              { id: 'lunas', label: 'Lunas' }
+              { id: 'sebagian', label: 'Sebagian' }
             ].map(tab => (
               <button
                 key={tab.id}
