@@ -38,12 +38,20 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
       ]
     },
     {
-      section: 'Laporan & Keuangan',
+      section: 'Keuangan & Operasional',
       items: [
-        { id: 'transaksi', label: 'Pemasukan & Pengeluaran', icon: Receipt },
-        { id: 'hutang', label: 'Buku Hutang & Piutang', icon: BookOpen, badge: '' },
-        { id: 'analitik', label: 'Analisis Penjualan', icon: BarChart3 },
         { id: 'keuangan', label: 'Laporan Kas', icon: Wallet },
+        { id: 'transaksi', label: 'Pemasukan & Pengeluaran', icon: Receipt },
+        { id: 'bahan-baku', label: 'Pengeluaran Bahan Baku', icon: UtensilsCrossed },
+        { id: 'hutang', label: 'Buku Hutang & Piutang', icon: BookOpen, badge: '' },
+      ]
+    },
+    {
+      section: 'Laporan & Analitik',
+      items: [
+        // { id: 'laporan_penjualan', label: 'Laporan Penjualan', icon: Receipt },
+        { id: 'analitik', label: 'Analisis Penjualan', icon: BarChart3 },
+        { id: 'barang-terjual', label: 'Summary Barang Terjual', icon: ShoppingBag },
         { id: 'kebocoran', label: 'Barang Terbuang / Waste', icon: Trash2, badge: '' },
       ]
     },

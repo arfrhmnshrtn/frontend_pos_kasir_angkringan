@@ -48,7 +48,7 @@ export const CashSummaryCards = ({ reportData, loading }) => {
       value: profit?.other_income || 0,
       icon: <ArrowDownLeft size={18} />,
       color: 'emerald',
-      desc: 'Pemasukan di luar pesanan POS'
+      desc: 'Pemasukan di luar pesanan'
     },
     {
       title: 'Laba Kotor',
@@ -63,7 +63,7 @@ export const CashSummaryCards = ({ reportData, loading }) => {
       value: profit?.total_expense || 0,
       icon: <ArrowUpRight size={18} />,
       color: 'danger',
-      desc: 'Pengeluaran operasional'
+      desc: 'Total Semua Pengeluaran'
     },
     {
       title: 'Laba Bersih',
@@ -78,7 +78,7 @@ export const CashSummaryCards = ({ reportData, loading }) => {
       value: debt?.remaining_receivable || 0,
       icon: <CreditCard size={18} />,
       color: 'amber',
-      desc: 'Tagihan pelanggan yang masih gantung'
+      desc: 'Tagihan pelanggan yang belum dibayar'
     }
   ];
 

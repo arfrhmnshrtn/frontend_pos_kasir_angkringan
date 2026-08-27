@@ -10,3 +10,15 @@ export const getSalesAnalysis = async (params) => {
     throw error;
   }
 };
+
+export const getProductsSold = async (params) => {
+  try {
+    const response = await api.get('/analysis/products-sold', {
+      params
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+

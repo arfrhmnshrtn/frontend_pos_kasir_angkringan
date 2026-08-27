@@ -15,6 +15,8 @@ import { NotFound404 } from '../pages/errors/NotFound404';
 import SalesAnalysis from '../pages/analysis/SalesAnalysis';
 import TopProductsPage from '../pages/analysis/TopProductsPage';
 import BadProductPage from '../pages/analysis/BadProductPage';
+import ProductsSoldPage from '../pages/analysis/ProductsSoldPage';
+import MaterialExpensesPage from '../pages/expenses/MaterialExpensesPage';
 
 export const AppRouter = () => {
   return (
@@ -87,6 +89,24 @@ export const AppRouter = () => {
           element={
             <RoleRoute allowedRoles={['OWNER', 'ADMIN']} requiredPermission={['sales_analysis.read']}>
               <BadProductPage />
+            </RoleRoute>
+          }
+        />
+
+        <Route
+          path="/analysis/products-sold"
+          element={
+            <RoleRoute allowedRoles={['OWNER', 'ADMIN']} requiredPermission={['sales_analysis.read']}>
+              <ProductsSoldPage />
+            </RoleRoute>
+          }
+        />
+
+        <Route
+          path="/expenses/materials"
+          element={
+            <RoleRoute allowedRoles={['OWNER', 'ADMIN']} requiredPermission={['cash.transaction.read', 'expense.read']}>
+              <MaterialExpensesPage />
             </RoleRoute>
           }
         />

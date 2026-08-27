@@ -13,7 +13,7 @@ export default function AnalysisSummary({ summary }) {
   if (!summary) return null;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       <div className="bg-linear-to-br from-blue-500 to-blue-700 text-white p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group">
         <div className="flex justify-between items-start relative z-10">
           <div className="text-blue-100 font-semibold text-xs tracking-wider uppercase mb-1">Total Omzet</div>
@@ -29,7 +29,7 @@ export default function AnalysisSummary({ summary }) {
 
       <div className="bg-linear-to-br from-emerald-500 to-emerald-700 text-white p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group">
         <div className="flex justify-between items-start relative z-10">
-          <div className="text-emerald-100 font-semibold text-xs tracking-wider uppercase mb-1">Laba Bersih</div>
+          <div className="text-emerald-100 font-semibold text-xs tracking-wider uppercase mb-1">Laba Bersih Penjualan</div>
           <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm group-hover:scale-110 transition-transform">
             <TrendingUp size={18} />
           </div>
@@ -40,7 +40,7 @@ export default function AnalysisSummary({ summary }) {
         <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"></div>
       </div>
 
-      <div className="bg-card border border-border p-5 rounded-xl flex flex-col justify-between shadow-sm">
+      {/* <div className="bg-card border border-border p-5 rounded-xl flex flex-col justify-between shadow-sm">
         <div className="flex justify-between items-start">
           <div className="text-text-secondary font-semibold text-xs tracking-wider uppercase mb-1">Laba Kotor</div>
           <div className="bg-main p-2 rounded-lg text-primary">
@@ -55,7 +55,7 @@ export default function AnalysisSummary({ summary }) {
             {summary.profit_margin}% Margin
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div className="bg-card border border-border p-5 rounded-xl flex flex-col justify-between shadow-sm">
         <div className="flex justify-between items-start">
@@ -81,7 +81,7 @@ export default function AnalysisSummary({ summary }) {
         </div>
       </div>
 
-      <div className="bg-card border border-border p-5 rounded-xl flex flex-col justify-between shadow-sm">
+      {/* <div className="bg-card border border-border p-5 rounded-xl flex flex-col justify-between shadow-sm">
         <div className="flex justify-between items-start">
           <div className="text-text-secondary font-semibold text-xs tracking-wider uppercase mb-1">Rata-rata Transaksi</div>
           <div className="bg-main p-2 rounded-lg text-primary">
@@ -91,7 +91,7 @@ export default function AnalysisSummary({ summary }) {
         <div className="text-xl font-extrabold text-text tracking-tight mt-2">
           {formatCurrency(summary.average_transaction)}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

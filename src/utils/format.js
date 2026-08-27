@@ -53,3 +53,20 @@ export const formatChartDate = (dateStr) => {
   }
   return dateStr;
 };
+
+export const formatDateTime = (dateString) => {
+  if (!dateString) return '-';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    return new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date).replace(' pukul ', ', ').replace('.', ':');
+  } catch (error) {
+    return dateString;
+  }
+};

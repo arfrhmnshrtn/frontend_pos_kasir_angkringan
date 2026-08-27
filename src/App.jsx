@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import Sidebar from './components/Layout/Sidebar';
-import Header from './components/Layout/Header';
+import Sidebar from './components/layout/Sidebar';
+import Header from './components/layout/Header';
 import StatCard from './components/Dashboard/StatCard';
 import { useAuth } from './hooks/useAuth';
 
@@ -21,6 +21,7 @@ import {
   Calculator
 } from 'lucide-react';
 import './index.css';
+import { DashboardPage } from './pages/dashboard/DashboardPage';
 
 // Lazy loading heavy components
 const SalesAnalysis = lazy(() => import('./pages/analysis/SalesAnalysis'));
@@ -34,6 +35,8 @@ const CashReportView = lazy(() => import('./components/Keuangan/CashReportView')
 const AddOrderModal = lazy(() => import('./components/Orders/AddOrderModal'));
 const LoginView = lazy(() => import('./components/Auth/LoginView'));
 const UsersPage = lazy(() => import('./pages/users/UsersPage').then(module => ({ default: module.UsersPage })));
+const ProductsSoldPage = lazy(() => import('./pages/analysis/ProductsSoldPage'));
+const MaterialExpensesPage = lazy(() => import('./pages/expenses/MaterialExpensesPage'));
 
 export default function App() {
   const { isAuthenticated, user, role, loading } = useAuth();
@@ -165,28 +168,31 @@ export default function App() {
 
         {/* Dashboard Main Scrollable Area */}
         <main className="p-7 flex-1 flex flex-col gap-6 max-w-[1600px] w-full mx-auto">
-          {/* Header Title Section */}
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="text-2xl font-extrabold text-text mb-1 tracking-tight">
-                {activeTab === 'dashboard' && 'Dashboard Utama'}
-                {activeTab === 'pos' && 'Kasir POS (Input Pembelian)'}
-                {activeTab === 'pesanan' && 'Kelola Pesanan'}
-                {activeTab === 'katalog' && 'Katalog & Stok Menu'}
-                {activeTab === 'pelanggan' && 'Data Pelanggan'}
-                {activeTab === 'transaksi' && 'Pemasukan & Pengeluaran'}
-                {activeTab === 'hutang' && 'Catatan Buku Hutang & Piutang'}
-                {activeTab === 'analitik' && 'Analisis Penjualan'}
-                {activeTab === 'keuangan' && 'Laporan Kas & Keuangan'}
-                {activeTab === 'kebocoran' && 'Barang Terbuang / Waste Log'}
-                {activeTab === 'users' && 'Kelola Pengguna & Kasir'}
-                {activeTab === 'pengaturan' && 'Pengaturan Toko'}
-              </h1>
-              <p className="text-sm text-text-secondary">
-                Selamat datang kembali, {user?.fullname || user?.name || 'Kasir'}! Berikut ringkasan operasional Angkringan hari ini.
-              </p>
+          {/* Header Title Section - Hidden on Dashboard as it has its own Welcome Banner */}
+          {activeTab !== 'dashboard' && (
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h1 className="text-2xl font-extrabold text-text mb-1 tracking-tight">
+                  {activeTab === 'pos' && 'Kasir POS (Input Pembelian)'}
+                  {activeTab === 'pesanan' && 'Kelola Pesanan'}
+                  {activeTab === 'katalog' && 'Katalog & Stok Menu'}
+                  {activeTab === 'pelanggan' && 'Data Pelanggan'}
+                  {activeTab === 'transaksi' && 'Pemasukan & Pengeluaran'}
+                  {activeTab === 'hutang' && 'Catatan Buku Hutang & Piutang'}
+                  {activeTab === 'analitik' && 'Analisis Penjualan'}
+                  {activeTab === 'barang-terjual' && 'Summary Barang Terjual'}
+                  {activeTab === 'bahan-baku' && 'Pengeluaran Bahan Baku'}
+                  {activeTab === 'keuangan' && 'Laporan Kas & Keuangan'}
+                  {activeTab === 'kebocoran' && 'Barang Terbuang / Waste Log'}
+                  {activeTab === 'users' && 'Kelola Pengguna & Kasir'}
+                  {activeTab === 'pengaturan' && 'Pengaturan Toko'}
+                </h1>
+                <p className="text-sm text-text-secondary">
+                  Selamat datang kembali, {user?.fullname || user?.name || 'Kasir'}! Berikut ringkasan operasional Angkringan hari ini.
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Conditional View Rendering based on active tab */}
           <Suspense fallback={
@@ -197,7 +203,7 @@ export default function App() {
           }>
             {activeTab === 'dashboard' && (
               <>
-                <SalesAnalysis />
+                <DashboardPage setActiveTab={setActiveTab} />
 
                 {/* Orders Data Table */}
                 <OrdersTable
@@ -285,6 +291,14 @@ export default function App() {
 
             {activeTab === 'analitik' && (
               <SalesAnalysis />
+            )}
+
+            {activeTab === 'barang-terjual' && (
+              <ProductsSoldPage />
+            )}
+
+            {activeTab === 'bahan-baku' && (
+              <MaterialExpensesPage />
             )}
 
             {activeTab === 'keuangan' && (
