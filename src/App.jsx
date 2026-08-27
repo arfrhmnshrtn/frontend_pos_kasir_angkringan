@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import Sidebar from './components/layout/Sidebar';
-import Header from './components/layout/Header';
+import Sidebar from './components/Layout/Sidebar';
+import Header from './components/Layout/Header';
 import StatCard from './components/Dashboard/StatCard';
 import { useAuth } from './hooks/useAuth';
 

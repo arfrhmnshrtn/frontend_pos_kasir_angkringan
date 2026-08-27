@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { PublicRoute } from './PublicRoute';
 import { ProtectedRoute } from './ProtectedRoute';
 import { RoleRoute } from './RoleRoute';
-import { MainLayout } from '../components/layout/MainLayout';
+import { MainLayout } from '../components/Layout/MainLayout';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
 import { UsersPage } from '../pages/users/UsersPage';
