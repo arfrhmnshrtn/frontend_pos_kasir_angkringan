@@ -36,7 +36,7 @@ export default function MaterialExpensesPage() {
     item_name: '',
     quantity: '',
     unit: 'KG', // default map
-    unit_price: '',
+    total_price: '',
     note: ''
   });
   const [formError, setFormError] = useState(null);
@@ -88,7 +88,7 @@ export default function MaterialExpensesPage() {
       item_name: '',
       quantity: '',
       unit: 'KG',
-      unit_price: '',
+      total_price: '',
       note: ''
     });
     setFormError(null);
@@ -102,7 +102,7 @@ export default function MaterialExpensesPage() {
       item_name: item.nama_item,
       quantity: item.jumlah,
       unit: item.satuan,
-      unit_price: item.harga_satuan,
+      total_price: item.total_harga,
       note: item.catatan || ''
     });
     setFormError(null);
@@ -110,28 +110,26 @@ export default function MaterialExpensesPage() {
   };
 
   const calculateTotal = () => {
-    const q = parseFloat(formData.quantity) || 0;
-    const p = parseFloat(formData.unit_price) || 0;
-    return Math.round(q * p);
+    return parseFloat(formData.total_price) || 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.item_name || !formData.quantity || !formData.unit || !formData.unit_price) {
+    if (!formData.item_name || !formData.quantity || !formData.unit || !formData.total_price) {
       setFormError('Semua field yang diperlukan harus diisi.');
       return;
     }
     
     const quantity = parseFloat(formData.quantity);
-    const unit_price = parseFloat(formData.unit_price);
+    const total_price = parseFloat(formData.total_price);
     
     if (quantity <= 0) {
       setFormError('Jumlah harus lebih dari 0.');
       return;
     }
     
-    if (unit_price < 0) {
-      setFormError('Harga satuan tidak boleh negatif.');
+    if (total_price < 0) {
+      setFormError('Total harga tidak boleh negatif.');
       return;
     }
 
@@ -143,7 +141,7 @@ export default function MaterialExpensesPage() {
         item_name: formData.item_name,
         quantity,
         unit: formData.unit,
-        unit_price,
+        total_price,
         note: formData.note
       };
 
@@ -367,12 +365,12 @@ export default function MaterialExpensesPage() {
             </div>
 
             <Input
-              label="Harga Satuan"
+              label="Total Harga Bayar"
               type="number"
               min="0"
               placeholder="Contoh: 15000"
-              value={formData.unit_price}
-              onChange={(e) => setFormData({ ...formData, unit_price: e.target.value })}
+              value={formData.total_price}
+              onChange={(e) => setFormData({ ...formData, total_price: e.target.value })}
               required
             />
             

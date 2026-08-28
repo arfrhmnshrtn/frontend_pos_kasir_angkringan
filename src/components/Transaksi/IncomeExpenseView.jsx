@@ -268,10 +268,17 @@ export default function IncomeExpenseView() {
       t.loggedBy.toLowerCase().includes(searchQuery.toLowerCase());
 
     let matchType = true;
-    if (filterType === 'pemasukan') matchType = t.type === 'Pemasukan';
-    else if (filterType === 'pengeluaran') matchType = t.type === 'Pengeluaran';
-    else if (filterType === 'pemasukan_lainnya') matchType = t.category === 'Pemasukan Lainnya';
-    else if (filterType === 'pengeluaran_lainnya') matchType = t.category === 'Pengeluaran Lainnya';
+    const catLower = t.category.toLowerCase();
+
+    if (filterType === 'pemasukan') {
+      matchType = t.type === 'Pemasukan' && (catLower.includes('penjualan') || t.rawPesanan !== null);
+    } else if (filterType === 'pemasukan_lainnya') {
+      matchType = t.type === 'Pemasukan' && !(catLower.includes('penjualan') || t.rawPesanan !== null);
+    } else if (filterType === 'pengeluaran') {
+      matchType = t.type === 'Pengeluaran' && catLower.includes('bahan baku');
+    } else if (filterType === 'pengeluaran_lainnya') {
+      matchType = t.type === 'Pengeluaran' && !catLower.includes('bahan baku');
+    }
 
     return matchSearch && matchType;
   });
@@ -415,10 +422,10 @@ export default function IncomeExpenseView() {
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
           {[
             { id: 'semua', label: 'Semua Transaksi' },
-            { id: 'pemasukan', label: '📈 Pemasukan' },
-            { id: 'pengeluaran', label: '📉 Pengeluaran' },
-            { id: 'pemasukan_lainnya', label: '✨ Pemasukan Lainnya' },
-            { id: 'pengeluaran_lainnya', label: '🧾 Pengeluaran Lainnya' },
+            { id: 'pemasukan', label: 'Pemasukan' },
+            { id: 'pengeluaran', label: 'Pengeluaran' },
+            { id: 'pemasukan_lainnya', label: 'Pemasukan Lainnya' },
+            { id: 'pengeluaran_lainnya', label: 'Pengeluaran Lainnya' },
           ].map(tab => (
             <button
               key={tab.id}
@@ -738,7 +745,7 @@ export default function IncomeExpenseView() {
                 <X size={18} />
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto">
               <div className="mb-4">
                 <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1">Nama Pelanggan</p>
