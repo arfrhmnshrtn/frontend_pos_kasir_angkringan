@@ -12,6 +12,7 @@ export default function ProductsSoldPage() {
   const [summaryData, setSummaryData] = useState(null);
 
   const [filter, setFilter] = useState('30days');
+  const [sortOrder, setSortOrder] = useState('default');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
 
@@ -178,21 +179,51 @@ export default function ProductsSoldPage() {
             </div>
           </div>
 
-          <Card header="Daftar Produk Terjual" className="overflow-hidden">
-            {summaryData.products.length > 0 ? (
-              <div className="overflow-x-auto w-full">
-                <Table
-                  data={summaryData.products}
-                  columns={columns}
-                  keyExtractor={(row) => row.id}
-                />
-              </div>
-            ) : (
-              <div className="p-8 text-center text-muted">
-                Belum ada produk yang terjual pada periode ini.
-              </div>
-            )}
-          </Card>
+          {(() => {
+            const sortedProducts = [...(summaryData.products || [])].sort((a, b) => {
+              if (sortOrder === 'revenue_desc') return b.revenue - a.revenue;
+              if (sortOrder === 'revenue_asc') return a.revenue - b.revenue;
+              if (sortOrder === 'profit_desc') return b.profit - a.profit;
+              if (sortOrder === 'profit_asc') return a.profit - b.profit;
+              return b.quantity - a.quantity; // default: Paling laris
+            });
+
+            return (
+              <Card 
+                header={
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <span>Daftar Produk Terjual</span>
+                    <select 
+                      className="text-sm font-normal py-1.5 px-3 rounded-lg border border-border bg-main text-text focus:outline-none focus:ring-2 focus:ring-primary-light transition-all"
+                      value={sortOrder}
+                      onChange={(e) => setSortOrder(e.target.value)}
+                    >
+                      <option value="default">Paling Laris (Terbanyak)</option>
+                      <option value="revenue_desc">Omzet Tertinggi</option>
+                      <option value="revenue_asc">Omzet Terendah</option>
+                      <option value="profit_desc">Laba Tertinggi</option>
+                      <option value="profit_asc">Laba Terendah</option>
+                    </select>
+                  </div>
+                } 
+                className="overflow-hidden"
+              >
+                {sortedProducts.length > 0 ? (
+                  <div className="overflow-x-auto w-full">
+                    <Table
+                      data={sortedProducts}
+                      columns={columns}
+                      keyExtractor={(row) => row.id}
+                    />
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-muted">
+                    Belum ada produk yang terjual pada periode ini.
+                  </div>
+                )}
+              </Card>
+            );
+          })()}
         </>
       )}
     </div>
