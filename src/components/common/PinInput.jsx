@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
-export const PinInput = ({ length = 4, value = '', onChange, error, label, disabled = false, autoFocus = true }) => {
+export const PinInput = ({ length = 4, value = '', onChange, error, label, disabled = false, autoFocus = true, hideKeypad = false }) => {
   const [showPin, setShowPin] = useState(false);
   const inputRefs = useRef([]);
 
@@ -146,7 +146,8 @@ export const PinInput = ({ length = 4, value = '', onChange, error, label, disab
       {error && <span className="text-xs text-danger font-medium text-center">{error}</span>}
 
       {/* Virtual Keypad for POS Touchscreens */}
-      <div className="mt-3 grid grid-cols-3 gap-2 max-w-xs mx-auto w-full">
+      {!hideKeypad && (
+        <div className="mt-3 grid grid-cols-3 gap-2 max-w-xs mx-auto w-full">
         {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
           <button
             key={digit}
@@ -183,6 +184,7 @@ export const PinInput = ({ length = 4, value = '', onChange, error, label, disab
           ⌫
         </button>
       </div>
+      )}
     </div>
   );
 };

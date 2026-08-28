@@ -69,7 +69,7 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
     let items = group.items;
 
     // Filter out hutang if no permission
-    if (!hasPermission('debt.read') && userRoleStr !== 'OWNER' && userRoleStr !== 'KASIR') {
+    if (!hasPermission('debt.read') && userRoleStr !== 'OWNER') {
       items = items.filter(item => item.id !== 'hutang');
     }
 

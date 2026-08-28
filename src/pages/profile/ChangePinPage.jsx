@@ -10,15 +10,21 @@ export const ChangePinPage = () => {
   const { changePin } = useAuth();
   const toast = useToast();
 
-  const [currentPin, setCurrentPin] = useState('');
+  const [oldPin, setOldPin] = useState('');
   const [newPin, setNewPin] = useState('');
-  const [confirmPin, setConfirmPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+
+    if (oldPin.length !== 4 || !/^\d{4}$/.test(oldPin)) {
+      const err = 'PIN lama harus 4 digit angka';
+      setErrorMsg(err);
+      toast.error(err);
+      return;
+    }
 
     if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
       const err = 'PIN baru harus 4 digit angka';
@@ -27,17 +33,10 @@ export const ChangePinPage = () => {
       return;
     }
 
-    if (newPin !== confirmPin) {
-      const err = 'Konfirmasi PIN tidak cocok dengan PIN baru';
-      setErrorMsg(err);
-      toast.error(err);
-      return;
-    }
-
     setLoading(true);
     try {
       const payload = {
-        ...(currentPin ? { currentPin } : {}),
+        currentPin: oldPin, // mapped for AuthContext backward compatibility, context handles oldPin natively if owner
         newPin,
         pin: newPin,
       };
@@ -46,9 +45,8 @@ export const ChangePinPage = () => {
 
       if (res.success) {
         toast.success(res.message || 'PIN berhasil diubah');
-        setCurrentPin('');
+        setOldPin('');
         setNewPin('');
-        setConfirmPin('');
       } else {
         setErrorMsg(res.message || 'Gagal mengubah PIN');
         toast.error(res.message || 'Gagal mengubah PIN');
@@ -74,10 +72,10 @@ export const ChangePinPage = () => {
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6">
           <PinInput
-            label="PIN Lama (Opsional/Jika Ada)"
-            value={currentPin}
-            onChange={setCurrentPin}
-            autoFocus={false}
+            label="PIN Lama"
+            value={oldPin}
+            onChange={setOldPin}
+            autoFocus={true}
           />
 
           <hr className="border-slate-100 dark:border-slate-800" />
@@ -86,13 +84,6 @@ export const ChangePinPage = () => {
             label="PIN Baru (4 Digit)"
             value={newPin}
             onChange={setNewPin}
-            autoFocus={true}
-          />
-
-          <PinInput
-            label="Konfirmasi PIN Baru"
-            value={confirmPin}
-            onChange={setConfirmPin}
             autoFocus={false}
             error={errorMsg}
           />

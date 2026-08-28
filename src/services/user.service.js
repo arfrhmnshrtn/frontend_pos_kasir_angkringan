@@ -26,6 +26,11 @@ export const userService = {
     return await api.patch(ENDPOINTS.USERS.RESET_PIN(id), { newPin });
   },
 
+  changeProfilePin: async (data) => {
+    // data: { oldPin: string, newPin: string }
+    return await api.patch(ENDPOINTS.USERS.CHANGE_PROFILE_PIN, data);
+  },
+
   deleteUser: async (id) => {
     return await api.delete(ENDPOINTS.USERS.BY_ID(id));
   },

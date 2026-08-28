@@ -13,6 +13,7 @@ export const ENDPOINTS = {
     BY_ID: (id) => `/users/${id}`,
     STATUS: (id) => `/users/${id}/status`,
     RESET_PIN: (id) => `/users/${id}/reset-pin`,
+    CHANGE_PROFILE_PIN: '/users/profile/change-pin',
   },
   ROLES: '/roles',
   PERMISSIONS: '/permissions',

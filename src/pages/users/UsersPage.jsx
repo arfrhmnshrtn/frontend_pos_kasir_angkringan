@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { userService } from '../../services/user.service';
 import { roleService } from '../../services/role.service';
+import { permissionService } from '../../services/permission.service';
 import { useToast } from '../../contexts/ToastContext';
 import { Table } from '../../components/common/Table';
 import { Button } from '../../components/common/Button';
@@ -47,6 +48,8 @@ export const UsersPage = () => {
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [allPermissions, setAllPermissions] = useState([]);
+  const [selectedPermissionIds, setSelectedPermissionIds] = useState([]);
 
   // Form Data States
   const [formData, setFormData] = useState({
@@ -57,16 +60,28 @@ export const UsersPage = () => {
     status: 'ACTIVE',
   });
   const [resetPinValue, setResetPinValue] = useState('');
+  const [oldPinValue, setOldPinValue] = useState('');
   const [formErrors, setFormErrors] = useState({});
 
-  // Fetch roles for dropdown
-  const fetchRoles = async () => {
+  // Fetch roles and permissions
+  const fetchRolesAndPermissions = async () => {
     try {
-      const res = await roleService.getRoles();
-      const roleList = res?.data || res || [];
+      const [resRoles, resPerms] = await Promise.all([
+        roleService.getRoles(),
+        permissionService.getPermissions()
+      ]);
+      console.log('--- DEBUG ROLE/PERMS ---');
+      console.log('resRoles', resRoles);
+      console.log('resPerms', resPerms);
+      
+      const roleList = resRoles?.data || resRoles || [];
       setRoles(Array.isArray(roleList) ? roleList : []);
+      
+      const permList = resPerms?.data || resPerms || [];
+      setAllPermissions(Array.isArray(permList) ? permList : []);
+      console.log('permList', permList);
     } catch (err) {
-      console.error('Error fetching roles:', err);
+      console.error('Error fetching roles/permissions:', err);
     }
   };
 
@@ -104,7 +119,7 @@ export const UsersPage = () => {
   }, [currentPage, search, toast]);
 
   useEffect(() => {
-    fetchRoles();
+    fetchRolesAndPermissions();
   }, []);
 
   useEffect(() => {
@@ -129,6 +144,12 @@ export const UsersPage = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const handleTogglePermission = (id) => {
+    setSelectedPermissionIds(prev => 
+      prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
+    );
+  };
+
   // Open Create Modal
   const handleOpenCreate = () => {
     setFormData({
@@ -139,6 +160,7 @@ export const UsersPage = () => {
       status: 'ACTIVE',
     });
     setFormErrors({});
+    setSelectedPermissionIds([]); // reset perm
     setIsCreateModalOpen(true);
   };
 
@@ -152,7 +174,8 @@ export const UsersPage = () => {
       const payload = {
         fullname: formData.name,
         pin: formData.pin,
-        role: 'KASIR'
+        role: 'KASIR',
+        permissionIds: selectedPermissionIds
       };
       const res = await userService.createUser(payload);
       toast.success(res?.message || 'Kasir berhasil ditambahkan');
@@ -170,12 +193,13 @@ export const UsersPage = () => {
   const handleOpenEdit = (user) => {
     setSelectedUser(user);
     setFormData({
-      name: user.name || '',
+      name: user.name || user.fullname || '',
       username: user.username || user.code || '',
       roleId: user.roleId || user.role?.id || user.role || '',
       status: user.status || 'ACTIVE',
     });
     setFormErrors({});
+    setSelectedPermissionIds(user.permissions || []);
     setIsEditModalOpen(true);
   };
 
@@ -188,9 +212,10 @@ export const UsersPage = () => {
     try {
       const userId = selectedUser.id || selectedUser._id;
       const res = await userService.updateUser(userId, {
-        name: formData.name,
+        fullname: formData.name,
         roleId: formData.roleId,
         status: formData.status,
+        permissionIds: selectedPermissionIds,
       });
       toast.success(res?.message || 'User berhasil diperbarui');
       setIsEditModalOpen(false);
@@ -206,6 +231,7 @@ export const UsersPage = () => {
   const handleOpenResetPin = (user) => {
     setSelectedUser(user);
     setResetPinValue('');
+    setOldPinValue('');
     setIsResetPinModalOpen(true);
   };
 
@@ -217,13 +243,26 @@ export const UsersPage = () => {
       return;
     }
 
+    const isOwner = selectedUser?.role?.name?.toUpperCase() === 'OWNER' || selectedUser?.role?.toUpperCase() === 'OWNER' || selectedUser?.role === 'OWNER';
+
+    if (isOwner && (!oldPinValue || !/^\d{4}$/.test(oldPinValue))) {
+       toast.error('PIN lama harus terdiri dari 4 digit angka');
+       return;
+    }
+
     setSubmitting(true);
     try {
-      const userId = selectedUser.id || selectedUser._id;
-      const res = await userService.resetUserPin(userId, resetPinValue);
-      toast.success(res?.message || 'PIN kasir berhasil direset');
+      let res;
+      if (isOwner) {
+         res = await userService.changeProfilePin({ oldPin: oldPinValue, newPin: resetPinValue });
+      } else {
+         const userId = selectedUser.id || selectedUser._id;
+         res = await userService.resetUserPin(userId, resetPinValue);
+      }
+      toast.success(res?.message || 'PIN berhasil diubah');
       setIsResetPinModalOpen(false);
       setResetPinValue('');
+      setOldPinValue('');
       fetchUsers();
     } catch (err) {
       toast.error(err?.response?.data?.message || err?.message || 'Gagal mereset PIN');
@@ -296,7 +335,7 @@ export const UsersPage = () => {
         </Button>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-3">
         <Button onClick={handleOpenCreate} icon={Plus} size="md" className="font-semibold shadow-md">
           Tambah Kasir
         </Button>
@@ -340,6 +379,7 @@ export const UsersPage = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
+
                       <button
                         onClick={() => handleOpenResetPin(item)}
                         title="Reset PIN"
@@ -388,6 +428,7 @@ export const UsersPage = () => {
               value={formData.pin}
               onChange={(val) => setFormData({ ...formData, pin: val })}
               error={formErrors.pin}
+              hideKeypad
             />
           </div>
 
@@ -443,13 +484,28 @@ export const UsersPage = () => {
       </Modal>
 
       {/* Modal Reset PIN */}
-      <Modal isOpen={isResetPinModalOpen} onClose={() => setIsResetPinModalOpen(false)} title={`Reset PIN - ${selectedUser?.name}`}>
+      <Modal isOpen={isResetPinModalOpen} onClose={() => setIsResetPinModalOpen(false)} title={`Ubah PIN - ${selectedUser?.name || selectedUser?.fullname || 'User'}`}>
         <form onSubmit={handleResetPinSubmit} className="space-y-4">
-          <p className="text-xs text-text-secondary">Masukkan 4 digit PIN baru untuk kasir ini.</p>
+          <p className="text-xs text-text-secondary">
+            {(selectedUser?.role?.name?.toUpperCase() === 'OWNER' || selectedUser?.role?.toUpperCase() === 'OWNER' || selectedUser?.role === 'OWNER') 
+              ? 'Masukkan PIN lama dan PIN baru Anda.' 
+              : 'Masukkan 4 digit PIN baru untuk kasir ini.'}
+          </p>
+          
+          {(selectedUser?.role?.name?.toUpperCase() === 'OWNER' || selectedUser?.role?.toUpperCase() === 'OWNER' || selectedUser?.role === 'OWNER') && (
+            <PinInput
+              label="PIN Lama (4 Digit)"
+              value={oldPinValue}
+              onChange={setOldPinValue}
+              hideKeypad
+            />
+          )}
+
           <PinInput
             label="PIN Baru (4 Digit)"
             value={resetPinValue}
             onChange={setResetPinValue}
+            hideKeypad
           />
           <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="secondary" onClick={() => setIsResetPinModalOpen(false)} disabled={submitting}>

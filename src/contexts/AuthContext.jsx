@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { storage } from '../utils/storage';
 import { authService } from '../services/auth.service';
+import { userService } from '../services/user.service';
 
 export const AuthContext = createContext(null);
 
@@ -136,7 +137,18 @@ export const AuthProvider = ({ children }) => {
   // Change PIN handler
   const changePin = async (data) => {
     try {
-      const res = await authService.changePin(data);
+      let res;
+      const userRoleStr = typeof role === 'string' ? role.toUpperCase() : role?.name?.toUpperCase() || '';
+      
+      if (userRoleStr === 'OWNER') {
+        res = await userService.changeProfilePin({
+          oldPin: data.currentPin,
+          newPin: data.newPin
+        });
+      } else {
+        res = await authService.changePin(data);
+      }
+      
       return {
         success: true,
         message: res?.message || 'PIN berhasil diubah',

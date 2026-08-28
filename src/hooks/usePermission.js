@@ -9,8 +9,11 @@ export const usePermission = () => {
   const { permissions, role } = useAuth();
 
   const hasPermission = useCallback(
-    (required) =>
-      checkRole(role, "OWNER") || checkPermission(permissions, required),
+    (required) => {
+      if (checkRole(role, "OWNER")) return true;
+      if (checkRole(role, "KASIR") && (required === 'debt.read' || required === 'debt.payment')) return true;
+      return checkPermission(permissions, required);
+    },
     [permissions, role],
   );
   const hasRoleHook = useCallback(
