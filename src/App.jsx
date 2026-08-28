@@ -54,7 +54,16 @@ export default function App() {
       return false;
     }
   });
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('angkringan_active_tab') || 'dashboard';
+  });
+
+  // Save active tab to localStorage so it persists on refresh
+  useEffect(() => {
+    if (activeTab) {
+      localStorage.setItem('angkringan_active_tab', activeTab);
+    }
+  }, [activeTab]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
