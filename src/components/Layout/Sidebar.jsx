@@ -51,8 +51,8 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
       items: [
         // { id: 'laporan_penjualan', label: 'Laporan Penjualan', icon: Receipt },
         { id: 'analitik', label: 'Analisis Penjualan', icon: BarChart3 },
-        { id: 'barang-terjual', label: 'Summary Barang Terjual', icon: ShoppingBag },
-        { id: 'kebocoran', label: 'Barang Terbuang / Waste', icon: Trash2, badge: '' },
+        { id: 'barang-terjual', label: 'Laporan Barang Terjual', icon: ShoppingBag },
+        { id: 'kebocoran', label: 'Barang Terbuang', icon: Trash2, badge: '' },
       ]
     },
     {

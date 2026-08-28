@@ -66,7 +66,6 @@ export default function ProductsSoldPage() {
     <div className="flex flex-col gap-6 w-full max-w-[1600px] mx-auto animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text">Laporan Barang Terjual</h1>
           {!loading && summaryData?.period && (
             <div className="mt-3 text-xs font-semibold bg-main border border-border inline-block px-3 py-1.5 rounded-lg shadow-sm">
               Periode: <span className="text-primary">{formatDate(summaryData.period.start_date)} - {formatDate(summaryData.period.end_date)}</span>
@@ -107,7 +106,7 @@ export default function ProductsSoldPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            
+
             <div className="bg-card border border-border rounded-xl p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md relative overflow-hidden">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-blue-500 bg-blue-500/10">

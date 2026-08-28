@@ -180,10 +180,10 @@ export default function App() {
                   {activeTab === 'transaksi' && 'Pemasukan & Pengeluaran'}
                   {activeTab === 'hutang' && 'Catatan Buku Hutang & Piutang'}
                   {activeTab === 'analitik' && 'Analisis Penjualan'}
-                  {activeTab === 'barang-terjual' && 'Summary Barang Terjual'}
+                  {activeTab === 'barang-terjual' && 'Laporan Barang Terjual'}
                   {activeTab === 'bahan-baku' && 'Pengeluaran Bahan Baku'}
                   {activeTab === 'keuangan' && 'Laporan Kas & Keuangan'}
-                  {activeTab === 'kebocoran' && 'Barang Terbuang / Waste Log'}
+                  {activeTab === 'kebocoran' && 'Barang Terbuang'}
                   {activeTab === 'users' && 'Kelola Pengguna & Kasir'}
                   {activeTab === 'pengaturan' && 'Pengaturan Toko'}
                 </h1>

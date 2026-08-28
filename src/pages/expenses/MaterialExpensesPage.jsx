@@ -23,6 +23,7 @@ export default function MaterialExpensesPage() {
   const [data, setData] = useState(null);
 
   const [filter, setFilter] = useState('30days');
+  const [sortOrder, setSortOrder] = useState('newest');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
 
@@ -256,58 +257,86 @@ export default function MaterialExpensesPage() {
           {[...Array(2)].map((_, i) => <div key={i} className="h-28 bg-card rounded-xl border border-border animate-pulse" />)}
         </div>
       ) : !data ? (
-        <div className="bg-card border border-border rounded-xl p-8 text-center text-muted">
-          Belum ada pencatatan pengeluaran bahan baku.
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-card border border-border rounded-xl p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md relative overflow-hidden">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-orange-500 bg-orange-500/10">
-                  <Wallet size={24} />
-                </div>
-                <div className="flex flex-col flex-1 min-w-0">
-                  <div className="text-xs text-text-secondary font-bold uppercase tracking-wider mb-1">Total Pengeluaran</div>
-                  <div className="text-2xl font-extrabold tracking-tight truncate text-orange-500">
-                    {formatCurrency(data.summary.total_material_expense)}
-                  </div>
-                </div>
-              </div>
-            </div>
+         <div className="bg-card border border-border rounded-xl p-8 text-center text-muted">
+           Belum ada pencatatan pengeluaran bahan baku.
+         </div>
+       ) : (
+         <>
+            {(() => {
+              const sortedItems = [...(data.items || [])].sort((a, b) => {
+                if (sortOrder === 'highest') return b.total_harga - a.total_harga;
+                if (sortOrder === 'lowest') return a.total_harga - b.total_harga;
+                return new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime();
+              });
 
-            <div className="bg-card border border-border rounded-xl p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md relative overflow-hidden">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-indigo-500 bg-indigo-500/10">
-                  <ShoppingBag size={24} />
-                </div>
-                <div className="flex flex-col flex-1 min-w-0">
-                  <div className="text-xs text-text-secondary font-bold uppercase tracking-wider mb-1">Total Transaksi</div>
-                  <div className="text-2xl font-extrabold tracking-tight truncate text-indigo-500">
-                    {data.summary.total_purchase_transactions} <span className="text-base font-semibold">struk</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+              return (
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="bg-card border border-border rounded-xl p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md relative overflow-hidden">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-orange-500 bg-orange-500/10">
+                          <Wallet size={24} />
+                        </div>
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <div className="text-xs text-text-secondary font-bold uppercase tracking-wider mb-1">Total Pengeluaran</div>
+                          <div className="text-2xl font-extrabold tracking-tight truncate text-orange-500">
+                            {formatCurrency(data.summary.total_material_expense)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-          <Card header="Daftar Pembelian Bahan Baku" className="overflow-hidden">
-            {data.items && data.items.length > 0 ? (
-              <div className="overflow-x-auto w-full">
-                <Table
-                  data={data.items}
-                  columns={columns}
-                  keyExtractor={(row) => row.id}
-                />
-              </div>
-            ) : (
-              <div className="p-8 text-center text-muted">
-                Belum ada pencatatan pengeluaran bahan baku pada periode ini.
-              </div>
-            )}
-          </Card>
-        </>
-      )}
+                    <div className="bg-card border border-border rounded-xl p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md relative overflow-hidden">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 text-indigo-500 bg-indigo-500/10">
+                          <ShoppingBag size={24} />
+                        </div>
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <div className="text-xs text-text-secondary font-bold uppercase tracking-wider mb-1">Total Transaksi</div>
+                          <div className="text-2xl font-extrabold tracking-tight truncate text-indigo-500">
+                            {data.summary.total_purchase_transactions} <span className="text-base font-semibold">struk</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Card 
+                    header={
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <span>Daftar Pembelian Bahan Baku</span>
+                        <select 
+                          className="text-sm font-normal py-1.5 px-3 rounded-lg border border-border bg-main text-text focus:outline-none focus:ring-2 focus:ring-primary-light transition-all"
+                          value={sortOrder}
+                          onChange={(e) => setSortOrder(e.target.value)}
+                        >
+                          <option value="newest">Terbaru</option>
+                          <option value="highest">Harga Tertinggi</option>
+                          <option value="lowest">Harga Terendah</option>
+                        </select>
+                      </div>
+                    } 
+                    className="overflow-hidden"
+                  >
+                    {sortedItems.length > 0 ? (
+                      <div className="overflow-x-auto w-full">
+                        <Table
+                          data={sortedItems}
+                          columns={columns}
+                          keyExtractor={(row) => row.id}
+                        />
+                      </div>
+                    ) : (
+                      <div className="p-8 text-center text-muted">
+                        Belum ada pencatatan pengeluaran bahan baku pada periode ini.
+                      </div>
+                    )}
+                  </Card>
+                </div>
+              );
+            })()}
+         </>
+       )}
 
       <Modal
         isOpen={isModalOpen}
