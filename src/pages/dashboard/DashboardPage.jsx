@@ -44,7 +44,7 @@ export const DashboardPage = ({ setActiveTab }) => {
   }, [fetchDashboard]);
 
   return (
-    <div className="space-y-6 pb-12 w-full overflow-hidden">
+    <div className="space-y-6 w-full overflow-hidden pb-0">
       {/* Clean Welcome Banner */}
       <div className="bg-card border border-border rounded-xl shadow-sm p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="max-w-2xl">
