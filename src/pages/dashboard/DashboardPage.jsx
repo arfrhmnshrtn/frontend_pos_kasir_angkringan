@@ -12,8 +12,7 @@ import { OrderSummary } from '../../components/Dashboard/OrderSummary';
 import { SalesChart7Days } from '../../components/Dashboard/SalesChart7Days';
 import { TopMenus } from '../../components/Dashboard/TopMenus';
 import { AllTimeStats } from '../../components/Dashboard/AllTimeStats';
-import { RecentTransactions } from '../../components/Dashboard/RecentTransactions';
-import { RecentOrders } from '../../components/Dashboard/RecentOrders';
+
 
 export const DashboardPage = ({ setActiveTab }) => {
   const { user, role } = useAuth();
@@ -137,11 +136,7 @@ export const DashboardPage = ({ setActiveTab }) => {
             </div>
           </div>
 
-          {/* Transaksi Terbaru */}
-          <RecentTransactions data={dashboardData.transaksi_terbaru} />
 
-          {/* Pesanan Terbaru */}
-          <RecentOrders data={dashboardData.pesanan_terbaru} />
         </div>
       )}
     </div>
