@@ -199,8 +199,8 @@ export default function DebtManagementView() {
               <button
                 key={tab.id}
                 className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all border ${statusFilter === tab.id
-                    ? 'bg-primary text-white border-primary shadow-md'
-                    : 'bg-main text-text-secondary border-border hover:bg-border/50'
+                  ? 'bg-primary text-white border-primary shadow-md'
+                  : 'bg-main text-text-secondary border-border hover:bg-border/50'
                   }`}
                 onClick={() => setStatusFilter(tab.id)}
               >
@@ -209,14 +209,20 @@ export default function DebtManagementView() {
             ))}
           </div>
 
-          <div className="bg-danger-bg/50 border border-danger/20 px-4 py-2 rounded-lg flex items-center gap-3">
-             <div className="p-2 bg-danger/10 text-danger rounded-lg">
-               <DollarSign size={18} />
-             </div>
-             <div>
-               <p className="text-[0.7rem] font-semibold text-danger/80 uppercase tracking-wider">Total Hutang Berjalan</p>
-               <p className="text-base font-bold text-danger">{formatRupiah(totalUnpaidDebt)}</p>
-             </div>
+          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 px-4 py-2 rounded-lg flex items-center gap-3 transition-colors">
+            <div className="p-2 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 rounded-lg">
+              <DollarSign size={18} />
+            </div>
+
+            <div>
+              <p className="text-[0.7rem] font-semibold text-red-600/80 dark:text-red-400/80 uppercase tracking-wider">
+                Total Hutang Berjalan
+              </p>
+
+              <p className="text-base font-bold text-red-700 dark:text-red-300">
+                {formatRupiah(totalUnpaidDebt)}
+              </p>
+            </div>
           </div>
         </div>
 

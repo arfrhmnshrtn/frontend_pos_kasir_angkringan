@@ -44,17 +44,32 @@ export default function App() {
   // Local state for sidebar/theme
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [darkTheme, setDarkTheme] = useState(false);
+  const [darkTheme, setDarkTheme] = useState(() => {
+    try {
+      const storedTheme = localStorage.getItem('angkringan_theme');
+      if (storedTheme === 'dark') return true;
+      if (storedTheme === 'light') return false;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return false;
+    }
+  });
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  // Apply dark mode class to document body
+  // Apply dark mode class to document body and save to localStorage
   useEffect(() => {
-    if (darkTheme) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    try {
+      if (darkTheme) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('angkringan_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('angkringan_theme', 'light');
+      }
+    } catch (e) {
+      // Error accessing localStorage, ignore
     }
   }, [darkTheme]);
 
