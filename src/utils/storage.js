@@ -69,5 +69,6 @@ export const storage = {
     localStorage.removeItem(KEYS.USER);
     localStorage.removeItem(KEYS.ROLE);
     localStorage.removeItem(KEYS.PERMISSIONS);
+    localStorage.removeItem('angkringan_active_tab');
   },
 };
