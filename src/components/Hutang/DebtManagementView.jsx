@@ -18,9 +18,10 @@ import { useToast } from '../../contexts/ToastContext';
 import { usePermission } from '../../hooks/usePermission';
 
 export default function DebtManagementView() {
-  const { hasPermission } = usePermission();
-  const canRead = hasPermission('debt.read');
-  const canPay = hasPermission('debt.payment');
+  const { hasPermission, role } = usePermission();
+  const userRoleStr = typeof role === 'string' ? role.toUpperCase() : role?.name?.toUpperCase() || 'KASIR';
+  const canRead = hasPermission('debt.read') || userRoleStr === 'KASIR' || userRoleStr === 'OWNER';
+  const canPay = hasPermission('debt.payment') || userRoleStr === 'KASIR' || userRoleStr === 'OWNER';
   const { success, error } = useToast();
 
   const [debts, setDebts] = useState([]);

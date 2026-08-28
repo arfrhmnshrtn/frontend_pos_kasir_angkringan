@@ -63,13 +63,13 @@ export default function Sidebar({ collapsed, setCollapsed, activeTab, setActiveT
     }
   ];
 
-  const allowedKasirMenus = ['pos', 'pesanan', 'katalog'];
+  const allowedKasirMenus = ['pos', 'pesanan', 'katalog', 'hutang'];
 
   const filteredMenuItems = menuItems.map(group => {
     let items = group.items;
 
     // Filter out hutang if no permission
-    if (!hasPermission('debt.read')) {
+    if (!hasPermission('debt.read') && userRoleStr !== 'OWNER' && userRoleStr !== 'KASIR') {
       items = items.filter(item => item.id !== 'hutang');
     }
 
