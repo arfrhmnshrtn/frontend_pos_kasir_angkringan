@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import {
   Search,
   Bell,
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react';
 
 export default function Header({ darkTheme, setDarkTheme, setMobileOpen, onOpenAddModal, searchQuery, setSearchQuery }) {
+  const { user } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
 
   const notifications = [
@@ -21,7 +23,7 @@ export default function Header({ darkTheme, setDarkTheme, setMobileOpen, onOpenA
   ];
 
   return (
-    <header className="h-17.5 bg-header/80 backdrop-blur-md border-b border-border px-6 flex items-center justify-between sticky top-0 z-90">
+    <header className="h-17.5 bg-header/80 backdrop-blur-md border-b border-border px-6 py-2 flex items-center justify-between sticky top-0 z-90">
       <div className="flex items-center gap-4">
         <button
           className="lg:hidden bg-transparent border-none text-text cursor-pointer p-1.5"
@@ -42,8 +44,9 @@ export default function Header({ darkTheme, setDarkTheme, setMobileOpen, onOpenA
         </button>
 
         <div className="flex items-center gap-2 cursor-pointer ml-1">
-          <div className="w-9 h-9 rounded-full bg-linear-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-[0.85rem]">A</div>
-          <ChevronDown size={16} className="text-text-secondary" />
+          <div className="w-9 h-9 rounded-full bg-linear-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-[0.85rem]">
+            {user?.fullname?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || 'U'}
+          </div>
         </div>
       </div>
     </header>
